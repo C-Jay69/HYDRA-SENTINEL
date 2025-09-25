@@ -7,13 +7,12 @@ from models.admin import (
     AdminUserView, PlatformStats, AlertOverview, RevenueMetrics,
     UserManagementAction, SystemAlert, UserRole, UserStatus
 )
-from services.auth_service import JWTBearer
 from database import db
+from auth_deps import get_current_user
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/admin", tags=["Admin"])
-jwt_bearer = JWTBearer()
 
 
 async def verify_admin_access(token_payload: dict):
