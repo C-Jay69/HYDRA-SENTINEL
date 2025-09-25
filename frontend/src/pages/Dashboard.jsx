@@ -280,7 +280,7 @@ const Dashboard = () => {
                   <Card 
                     key={child.id || child._id}
                     className={`cursor-pointer transition-all ${
-                      selectedChild?.id === (child.id || child._id)
+                      selectedChild?._id === child._id || selectedChild?.id === child.id
                         ? 'bg-blue-600/20 border-blue-500' 
                         : 'bg-gray-800/50 border-gray-700 hover:border-gray-600'
                     }`}
