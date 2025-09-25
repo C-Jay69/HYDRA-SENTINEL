@@ -577,6 +577,8 @@ const Dashboard = () => {
             </div>
           </TabsContent>
         </Tabs>
+          </>
+        )}
       </div>
     </div>
   );
