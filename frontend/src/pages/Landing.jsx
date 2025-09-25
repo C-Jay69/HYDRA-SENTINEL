@@ -219,6 +219,7 @@ const Landing = () => {
                 <Button 
                   size="lg"
                   className="bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white px-8 py-4 text-lg font-semibold"
+                  onClick={() => navigate('/login')}
                 >
                   TRY NOW
                 </Button>
@@ -226,6 +227,7 @@ const Landing = () => {
                   size="lg"
                   variant="outline"
                   className="border-gray-600 text-gray-300 hover:bg-gray-800 px-8 py-4 text-lg"
+                  onClick={() => navigate('/login')}
                 >
                   👁 VIEW DEMO
                 </Button>
