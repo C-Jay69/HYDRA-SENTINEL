@@ -274,7 +274,7 @@ const Dashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <div className="text-2xl font-bold text-white">
-                    {mockMessages.filter(m => m.childId === selectedChild.id).length}
+                    {summary.messages_today || 0}
                   </div>
                   <div className="text-gray-400">Messages</div>
                 </div>
