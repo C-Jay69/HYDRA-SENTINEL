@@ -11,6 +11,7 @@ from routes.users import router as users_router
 from routes.monitoring import router as monitoring_router
 from routes.control import router as control_router
 from routes.admin import router as admin_router
+from routes.payments import router as payments_router
 from database import db
 
 ROOT_DIR = Path(__file__).parent
