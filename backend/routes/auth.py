@@ -65,7 +65,7 @@ async def register(user_data: UserCreate):
         refresh_token = AuthService.create_refresh_token(token_data)
         
         # Update last login
-        await db.update_one("users", {"_id": user_id}, {"last_login": "now"})
+        await db.update_one("users", {"_id": user_id}, {"last_login": datetime.utcnow()})
         
         # Prepare user response (without password)
         user_response = {
