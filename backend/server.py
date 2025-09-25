@@ -36,6 +36,7 @@ app.include_router(users_router)
 app.include_router(monitoring_router)
 app.include_router(control_router)
 app.include_router(admin_router)
+app.include_router(payments_router)
 
 app.add_middleware(
     CORSMiddleware,
