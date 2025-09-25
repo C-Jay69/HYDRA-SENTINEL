@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
@@ -18,17 +18,12 @@ import {
   X,
   MoreHorizontal,
   Eye,
-  EyeOff
+  EyeOff,
+  Loader2
 } from 'lucide-react';
-import { 
-  mockUser, 
-  mockCallLogs, 
-  mockMessages, 
-  mockLocations, 
-  mockApps, 
-  mockWebHistory, 
-  mockAlerts 
-} from '../data/mockData';
+import { useAuth } from '../context/AuthContext';
+import { usersAPI, monitoringAPI } from '../services/api';
+import { useToast } from '../hooks/use-toast';
 
 const Dashboard = () => {
   const [selectedChild, setSelectedChild] = useState(mockUser.children[0]);
