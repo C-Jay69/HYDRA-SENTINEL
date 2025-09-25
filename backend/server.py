@@ -8,6 +8,8 @@ from pathlib import Path
 # Import routes
 from routes.auth import router as auth_router
 from routes.users import router as users_router
+from routes.monitoring import router as monitoring_router
+from routes.control import router as control_router
 from database import db
 
 ROOT_DIR = Path(__file__).parent
