@@ -66,9 +66,12 @@ const Dashboard = () => {
       }
     } catch (error) {
       console.error('Failed to load children:', error);
+      const errorMessage = error.response?.data?.detail || 
+                          error.message || 
+                          "Failed to load children data";
       toast({
         title: "Error",
-        description: "Failed to load children data",
+        description: typeof errorMessage === 'string' ? errorMessage : "Failed to load children data",
         variant: "destructive"
       });
     } finally {
