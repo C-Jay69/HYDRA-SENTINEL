@@ -96,7 +96,7 @@ class JWTBearer:
     def __init__(self, auto_error: bool = True):
         self.auto_error = auto_error
 
-    def __call__(self, request) -> Optional[dict]:
+    def __call__(self, request: Request) -> Optional[dict]:
         authorization: str = request.headers.get("Authorization")
         if not authorization:
             if self.auto_error:
