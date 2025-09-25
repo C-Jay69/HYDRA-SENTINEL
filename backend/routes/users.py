@@ -64,7 +64,7 @@ async def get_user_profile(token_payload: dict = Depends(get_current_user)):
 @router.put("/profile")
 async def update_user_profile(
     user_update: UserUpdate,
-    token_payload: dict = Depends(jwt_bearer)
+    token_payload: dict = Depends(get_current_user)
 ):
     """Update current user profile"""
     try:
@@ -138,7 +138,7 @@ async def get_user_children(token_payload: dict = Depends(jwt_bearer)):
 @router.post("/children", response_model=Child, status_code=status.HTTP_201_CREATED)
 async def add_child(
     child_data: ChildCreate,
-    token_payload: dict = Depends(jwt_bearer)
+    token_payload: dict = Depends(get_current_user)
 ):
     """Add a new child to the current user"""
     try:
@@ -189,7 +189,7 @@ async def add_child(
 @router.get("/children/{child_id}", response_model=Child)
 async def get_child(
     child_id: str,
-    token_payload: dict = Depends(jwt_bearer)
+    token_payload: dict = Depends(get_current_user)
 ):
     """Get specific child information"""
     try:
@@ -220,7 +220,7 @@ async def get_child(
 async def update_child(
     child_id: str,
     child_update: ChildUpdate,
-    token_payload: dict = Depends(jwt_bearer)
+    token_payload: dict = Depends(get_current_user)
 ):
     """Update child information"""
     try:
@@ -285,7 +285,7 @@ async def update_child(
 @router.delete("/children/{child_id}")
 async def remove_child(
     child_id: str,
-    token_payload: dict = Depends(jwt_bearer)
+    token_payload: dict = Depends(get_current_user)
 ):
     """Remove a child from the current user"""
     try:
