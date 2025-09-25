@@ -52,7 +52,7 @@ const Dashboard = () => {
   // Load child-specific data when selected child changes
   useEffect(() => {
     if (selectedChild) {
-      loadChildData(selectedChild.id);
+      loadChildData(selectedChild._id || selectedChild.id);
     }
   }, [selectedChild]);
 
