@@ -288,7 +288,7 @@ const Dashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <div className="text-2xl font-bold text-white">
-                    {mockApps.filter(a => a.childId === selectedChild.id && !a.blocked).length}
+                    {summary.active_apps || 0}
                   </div>
                   <div className="text-gray-400">Apps Active</div>
                 </div>
