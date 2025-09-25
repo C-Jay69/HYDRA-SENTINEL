@@ -15,6 +15,7 @@ import {
   Zap
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { paymentsAPI } from '../services/api';
 import { useToast } from '../hooks/use-toast';
 
 const Billing = () => {
