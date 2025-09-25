@@ -260,7 +260,7 @@ const Dashboard = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <div className="text-2xl font-bold text-white">
-                    {mockCallLogs.filter(c => c.childId === selectedChild.id).length}
+                    {summary.calls_today || 0}
                   </div>
                   <div className="text-gray-400">Calls Today</div>
                 </div>
