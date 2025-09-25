@@ -545,8 +545,7 @@ const Dashboard = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {mockWebHistory
-                      .filter(w => w.childId === selectedChild.id)
+                    {webHistory
                       .map((site) => (
                         <div key={site.id} className="flex items-start justify-between p-3 bg-gray-700/50 rounded-lg">
                           <div className="flex items-start gap-3">
