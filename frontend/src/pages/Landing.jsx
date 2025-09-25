@@ -132,11 +132,16 @@ const Landing = () => {
 
             {/* Auth Buttons */}
             <div className="hidden md:flex items-center space-x-4">
-              <Button variant="ghost" className="text-gray-300 hover:text-white">
+              <Button 
+                variant="ghost" 
+                className="text-gray-300 hover:text-white"
+                onClick={() => navigate('/login')}
+              >
                 LOG IN
               </Button>
               <Button 
                 className="bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white px-6"
+                onClick={() => navigate('/login')}
               >
                 TRY NOW
               </Button>
