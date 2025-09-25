@@ -108,7 +108,7 @@ async def get_users(
     search: Optional[str] = Query(None),
     status: Optional[UserStatus] = Query(None),
     subscription: Optional[str] = Query(None),
-    token_payload: dict = Depends(jwt_bearer)
+    token_payload: dict = Depends(get_current_user)
 ):
     """Get paginated list of users with admin details"""
     try:
@@ -174,7 +174,7 @@ async def get_users(
 async def manage_user(
     user_id: str,
     action: UserManagementAction,
-    token_payload: dict = Depends(jwt_bearer)
+    token_payload: dict = Depends(get_current_user)
 ):
     """Perform management actions on users"""
     try:
@@ -261,7 +261,7 @@ async def get_admin_alerts(
     severity: Optional[str] = Query(None),
     alert_type: Optional[str] = Query(None),
     unread_only: bool = Query(False),
-    token_payload: dict = Depends(jwt_bearer)
+    token_payload: dict = Depends(get_current_user)
 ):
     """Get system-wide alert overview for admins"""
     try:
@@ -320,7 +320,7 @@ async def get_admin_alerts(
 @router.get("/revenue")
 async def get_revenue_metrics(
     days: int = Query(30, ge=1, le=365),
-    token_payload: dict = Depends(jwt_bearer)
+    token_payload: dict = Depends(get_current_user)
 ):
     """Get revenue analytics"""
     try:
@@ -357,7 +357,7 @@ async def get_revenue_metrics(
 @router.post("/system-alert")
 async def create_system_alert(
     alert: SystemAlert,
-    token_payload: dict = Depends(jwt_bearer)
+    token_payload: dict = Depends(get_current_user)
 ):
     """Create a system-wide alert"""
     try:
