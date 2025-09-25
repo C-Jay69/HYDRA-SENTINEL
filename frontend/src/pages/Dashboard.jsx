@@ -195,6 +195,27 @@ const Dashboard = () => {
                   </div>
                 )}
               </div>
+
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => navigate('/billing')}
+                className="text-gray-300 hover:text-white"
+              >
+                Billing
+              </Button>
+
+              {/* Admin Link - only show for admin users */}
+              {user?.email?.includes('admin') && (
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => navigate('/admin')}
+                  className="text-red-300 hover:text-red-200"
+                >
+                  Admin Panel
+                </Button>
+              )}
               
               <Avatar>
                 <AvatarImage src={user?.avatar} />
