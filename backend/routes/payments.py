@@ -43,7 +43,17 @@ async def create_checkout_session(
     """Create Stripe checkout session"""
     try:
         # Get user
-        user = await db.find_one("users", {"_id": token_payload["user_id"]})
+        from bson import ObjectId
+        
+        user_id = token_payload["user_id"]
+        user = await db.find_one("users", {"_id": user_id})
+        if not user:
+            # Try with ObjectId if string lookup fails
+            try:
+                user = await db.find_one("users", {"_id": ObjectId(user_id)})
+            except:
+                pass
+        
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
