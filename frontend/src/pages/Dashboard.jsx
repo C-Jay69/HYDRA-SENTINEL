@@ -41,14 +41,113 @@ const Dashboard = () => {
   const [webHistory, setWebHistory] = useState([]);
   const [summary, setSummary] = useState({});
 
-  const markAlertAsRead = (alertId) => {
-    setAlerts(alerts.map(alert => 
-      alert.id === alertId ? { ...alert, read: true } : alert
-    ));
+  // Load children and initial data
+  useEffect(() => {
+    loadChildren();
+  }, []);
+
+  // Load child-specific data when selected child changes
+  useEffect(() => {
+    if (selectedChild) {
+      loadChildData(selectedChild.id);
+    }
+  }, [selectedChild]);
+
+  const loadChildren = async () => {
+    try {
+      setLoading(true);
+      const childrenData = await usersAPI.getChildren();
+      setChildren(childrenData);
+      if (childrenData.length > 0) {
+        setSelectedChild(childrenData[0]);
+      }
+    } catch (error) {
+      console.error('Failed to load children:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load children data",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const dismissAlert = (alertId) => {
-    setAlerts(alerts.filter(alert => alert.id !== alertId));
+  const loadChildData = async (childId) => {
+    try {
+      const [
+        alertsData,
+        callLogsData,
+        messagesData,
+        locationsData,
+        appsData,
+        webHistoryData,
+        summaryData
+      ] = await Promise.all([
+        monitoringAPI.getAlerts(childId, false, 10),
+        monitoringAPI.getCallLogs(childId, 10),
+        monitoringAPI.getMessages(childId, 10),
+        monitoringAPI.getLocations(childId, 10),
+        monitoringAPI.getAppUsage(childId, 10),
+        monitoringAPI.getWebHistory(childId, 10),
+        monitoringAPI.getChildSummary(childId)
+      ]);
+
+      setAlerts(alertsData);
+      setCallLogs(callLogsData);
+      setMessages(messagesData);
+      setLocations(locationsData);
+      setApps(appsData);
+      setWebHistory(webHistoryData);
+      setSummary(summaryData);
+    } catch (error) {
+      console.error('Failed to load child data:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load monitoring data",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const markAlertAsRead = async (alertId) => {
+    if (!selectedChild) return;
+    
+    try {
+      await monitoringAPI.markAlertAsRead(selectedChild.id, alertId);
+      setAlerts(alerts.map(alert => 
+        alert.id === alertId ? { ...alert, read: true } : alert
+      ));
+      toast({
+        title: "Alert marked as read",
+      });
+    } catch (error) {
+      console.error('Failed to mark alert as read:', error);
+      toast({
+        title: "Error",
+        description: "Failed to mark alert as read",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const dismissAlert = async (alertId) => {
+    if (!selectedChild) return;
+    
+    try {
+      await monitoringAPI.dismissAlert(selectedChild.id, alertId);
+      setAlerts(alerts.filter(alert => alert.id !== alertId));
+      toast({
+        title: "Alert dismissed",
+      });
+    } catch (error) {
+      console.error('Failed to dismiss alert:', error);
+      toast({
+        title: "Error", 
+        description: "Failed to dismiss alert",
+        variant: "destructive"
+      });
+    }
   };
 
   const getAlertIcon = (type) => {
