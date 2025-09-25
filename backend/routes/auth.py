@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends, status
 from fastapi.security import HTTPBearer
 from pydantic import BaseModel
 from typing import Optional
+from datetime import datetime
 import logging
 
 from models.user import User, UserCreate, UserLogin, GoogleAuthRequest, SubscriptionPlan
