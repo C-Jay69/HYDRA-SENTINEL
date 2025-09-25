@@ -312,8 +312,8 @@ const Dashboard = () => {
           </Card>
         </div>
 
-          {/* Alerts Section */}
-          {alerts.filter(a => !a.read).length > 0 && (
+            {/* Alerts Section */}
+            {alerts.filter(a => !a.read).length > 0 && (
           <Card className="bg-red-500/10 border-red-500/30 mb-8">
             <CardHeader>
               <CardTitle className="text-red-300 flex items-center gap-2">
