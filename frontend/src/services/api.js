@@ -219,4 +219,21 @@ export const controlAPI = {
   },
 };
 
+// Payments API
+export const paymentsAPI = {
+  createCheckoutSession: async (planId) => {
+    const response = await api.post('/api/payments/create-checkout-session', {
+      plan_id: planId,
+      success_url: window.location.origin + '/billing?success=true',
+      cancel_url: window.location.origin + '/billing?cancelled=true'
+    });
+    return response.data;
+  },
+
+  getSubscriptionStatus: async () => {
+    const response = await api.get('/api/payments/subscription-status');
+    return response.data;
+  }
+};
+
 export default api;
