@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 
 const Landing = () => {
+  const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const features = [
