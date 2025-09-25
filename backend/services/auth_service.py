@@ -3,6 +3,7 @@ import bcrypt
 from datetime import datetime, timedelta
 from typing import Optional
 import os
+from fastapi import HTTPException, Request
 from google.oauth2 import id_token
 from google.auth.transport import requests
 import logging
