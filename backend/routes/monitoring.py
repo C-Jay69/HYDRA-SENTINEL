@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends, status, Query
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import List, Optional
 import logging
 from datetime import datetime
