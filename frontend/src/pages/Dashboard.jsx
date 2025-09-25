@@ -208,11 +208,17 @@ const Dashboard = () => {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Child Selector */}
-        <div className="mb-8">
-          <h2 className="text-lg font-semibold text-white mb-4">Select Child</h2>
-          <div className="flex gap-4">
-            {mockUser.children.map((child) => (
+        {loading ? (
+          <div className="flex items-center justify-center h-64">
+            <Loader2 className="w-8 h-8 animate-spin text-blue-400" />
+          </div>
+        ) : (
+          <>
+            {/* Child Selector */}
+            <div className="mb-8">
+              <h2 className="text-lg font-semibold text-white mb-4">Select Child</h2>
+              <div className="flex gap-4">
+                {children.map((child) => (
               <Card 
                 key={child.id}
                 className={`cursor-pointer transition-all ${
