@@ -166,8 +166,19 @@ const Landing = () => {
               <a href="#pricing" className="block py-2 text-gray-300 hover:text-white">Pricing</a>
               <a href="#support" className="block py-2 text-gray-300 hover:text-white">Support</a>
               <div className="border-t border-gray-700 pt-2 space-y-2">
-                <Button variant="ghost" className="w-full text-left text-gray-300">LOG IN</Button>
-                <Button className="w-full bg-gradient-to-r from-blue-600 to-cyan-500">TRY NOW</Button>
+                <Button 
+                  variant="ghost" 
+                  className="w-full text-left text-gray-300"
+                  onClick={() => navigate('/login')}
+                >
+                  LOG IN
+                </Button>
+                <Button 
+                  className="w-full bg-gradient-to-r from-blue-600 to-cyan-500"
+                  onClick={() => navigate('/login')}
+                >
+                  TRY NOW
+                </Button>
               </div>
             </div>
           </div>
