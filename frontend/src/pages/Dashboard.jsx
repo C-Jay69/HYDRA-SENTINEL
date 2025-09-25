@@ -194,13 +194,13 @@ const Dashboard = () => {
               </div>
               
               <Avatar>
-                <AvatarImage src={mockUser.avatar} />
-                <AvatarFallback>SJ</AvatarFallback>
+                <AvatarImage src={user?.avatar} />
+                <AvatarFallback>{user?.name?.charAt(0) || 'U'}</AvatarFallback>
               </Avatar>
               
               <div className="text-right">
-                <div className="text-white font-medium">{mockUser.name}</div>
-                <div className="text-sm text-gray-400">{mockUser.subscription} Plan</div>
+                <div className="text-white font-medium">{user?.name || 'User'}</div>
+                <div className="text-sm text-gray-400">{user?.subscription || 'Basic'} Plan</div>
               </div>
             </div>
           </div>
