@@ -36,7 +36,7 @@ async def verify_admin_access(token_payload: dict):
 
 
 @router.get("/dashboard", response_model=PlatformStats)
-async def get_admin_dashboard(token_payload: dict = Depends(jwt_bearer)):
+async def get_admin_dashboard(token_payload: dict = Depends(get_current_user)):
     """Get admin dashboard statistics"""
     try:
         await verify_admin_access(token_payload)
