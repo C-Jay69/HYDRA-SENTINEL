@@ -38,7 +38,7 @@ async def get_stripe_config():
 @router.post("/create-checkout-session")
 async def create_checkout_session(
     session_data: CreateCheckoutSession,
-    token_payload: dict = Depends(jwt_bearer)
+    token_payload: dict = Depends(get_current_user)
 ):
     """Create Stripe checkout session"""
     try:
