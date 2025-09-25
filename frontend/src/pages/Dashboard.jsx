@@ -447,8 +447,7 @@ const Dashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {mockCallLogs
-                    .filter(c => c.childId === selectedChild.id)
+                  {callLogs
                     .map((call) => (
                       <div key={call.id} className="flex items-center justify-between p-4 bg-gray-700/50 rounded-lg">
                         <div className="flex items-center gap-4">
