@@ -47,7 +47,7 @@ async def verify_child_ownership(child_id: str, user_id: str):
 @router.get("/{child_id}/settings")
 async def get_control_settings(
     child_id: str,
-    token_payload: dict = Depends(jwt_bearer)
+    token_payload: dict = Depends(get_current_user)
 ):
     """Get control settings for a specific child"""
     try:
@@ -86,7 +86,7 @@ async def get_control_settings(
 async def control_app(
     child_id: str,
     app_control: AppControlRequest,
-    token_payload: dict = Depends(jwt_bearer)
+    token_payload: dict = Depends(get_current_user)
 ):
     """Block or unblock an app for a specific child"""
     try:
@@ -161,7 +161,7 @@ async def control_app(
 async def control_website(
     child_id: str,
     website_control: WebsiteBlockRequest,
-    token_payload: dict = Depends(jwt_bearer)
+    token_payload: dict = Depends(get_current_user)
 ):
     """Block or unblock a website for a specific child"""
     try:
@@ -218,7 +218,7 @@ async def control_website(
 async def create_geofence(
     child_id: str,
     geofence_data: GeofenceRequest,
-    token_payload: dict = Depends(jwt_bearer)
+    token_payload: dict = Depends(get_current_user)
 ):
     """Create or update a geofence for a specific child"""
     try:
@@ -271,7 +271,7 @@ async def create_geofence(
 async def update_control_settings(
     child_id: str,
     settings_update: dict,
-    token_payload: dict = Depends(jwt_bearer)
+    token_payload: dict = Depends(get_current_user)
 ):
     """Update control settings for a specific child"""
     try:
@@ -341,7 +341,7 @@ async def update_control_settings(
 async def delete_geofence(
     child_id: str,
     geofence_id: str,
-    token_payload: dict = Depends(jwt_bearer)
+    token_payload: dict = Depends(get_current_user)
 ):
     """Delete a geofence for a specific child"""
     try:
