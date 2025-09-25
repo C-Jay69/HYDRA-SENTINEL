@@ -4,13 +4,12 @@ from typing import Optional
 import logging
 import os
 
-from services.auth_service import JWTBearer
 from database import db
+from auth_deps import get_current_user
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/payments", tags=["Payments"])
-jwt_bearer = JWTBearer()
 
 # Stripe configuration (add your keys to .env)
 STRIPE_PUBLISHABLE_KEY = os.environ.get('STRIPE_PUBLISHABLE_KEY', 'pk_test_...')
