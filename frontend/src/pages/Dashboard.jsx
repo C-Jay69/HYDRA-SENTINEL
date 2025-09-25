@@ -216,9 +216,37 @@ const Dashboard = () => {
           <>
             {/* Child Selector */}
             <div className="mb-8">
-              <h2 className="text-lg font-semibold text-white mb-4">Select Child</h2>
-              <div className="flex gap-4">
-                {children.map((child) => (
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg font-semibold text-white">Select Child</h2>
+                <Button 
+                  onClick={() => navigate('/add-child')}
+                  className="bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600"
+                >
+                  + Add Child
+                </Button>
+              </div>
+              
+              {children.length === 0 ? (
+                <Card className="bg-gray-800/50 border-gray-700 text-center p-8">
+                  <CardContent className="space-y-4">
+                    <div className="w-16 h-16 mx-auto bg-gray-700 rounded-full flex items-center justify-center">
+                      <Users className="w-8 h-8 text-gray-400" />
+                    </div>
+                    <div className="text-white font-medium">No Children Added Yet</div>
+                    <div className="text-gray-400 max-w-md mx-auto">
+                      Start monitoring your family's digital safety by adding your first child's device.
+                    </div>
+                    <Button 
+                      onClick={() => navigate('/add-child')}
+                      className="bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600"
+                    >
+                      Add Your First Child
+                    </Button>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="flex gap-4">
+                  {children.map((child) => (
                   <Card 
                     key={child.id || child._id}
                     className={`cursor-pointer transition-all ${
