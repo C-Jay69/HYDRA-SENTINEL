@@ -219,39 +219,39 @@ const Dashboard = () => {
               <h2 className="text-lg font-semibold text-white mb-4">Select Child</h2>
               <div className="flex gap-4">
                 {children.map((child) => (
-              <Card 
-                key={child.id || child._id}
-                className={`cursor-pointer transition-all ${
-                  selectedChild?.id === (child.id || child._id)
-                    ? 'bg-blue-600/20 border-blue-500' 
-                    : 'bg-gray-800/50 border-gray-700 hover:border-gray-600'
-                }`}
-                onClick={() => setSelectedChild(child)}
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-center space-x-3">
-                    <Avatar>
-                      <AvatarImage src={child.avatar} />
-                      <AvatarFallback>{child.name.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <div className="text-white font-medium">{child.name}</div>
-                      <div className="text-sm text-gray-400">{child.device}</div>
-                      <div className="flex items-center gap-2 mt-1">
-                        <div className={`w-2 h-2 rounded-full ${
-                          child.status === 'online' ? 'bg-green-500' : 'bg-gray-500'
-                        }`}></div>
-                        <span className="text-xs text-gray-400">
-                          {child.status === 'online' ? 'Online' : 'Last seen 2h ago'}
-                        </span>
+                  <Card 
+                    key={child.id || child._id}
+                    className={`cursor-pointer transition-all ${
+                      selectedChild?.id === (child.id || child._id)
+                        ? 'bg-blue-600/20 border-blue-500' 
+                        : 'bg-gray-800/50 border-gray-700 hover:border-gray-600'
+                    }`}
+                    onClick={() => setSelectedChild(child)}
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex items-center space-x-3">
+                        <Avatar>
+                          <AvatarImage src={child.avatar} />
+                          <AvatarFallback>{child.name.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <div className="text-white font-medium">{child.name}</div>
+                          <div className="text-sm text-gray-400">{child.device}</div>
+                          <div className="flex items-center gap-2 mt-1">
+                            <div className={`w-2 h-2 rounded-full ${
+                              child.status === 'online' ? 'bg-green-500' : 'bg-gray-500'
+                            }`}></div>
+                            <span className="text-xs text-gray-400">
+                              {child.status === 'online' ? 'Online' : 'Last seen 2h ago'}
+                            </span>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             </div>
-          </div>
 
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
