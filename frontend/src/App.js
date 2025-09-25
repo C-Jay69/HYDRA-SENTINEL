@@ -6,6 +6,7 @@ import { AuthProvider, useAuth } from "./context/AuthContext";
 import Landing from "./pages/Landing";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
+import AddChild from "./pages/AddChild";
 
 // Protected Route component
 const ProtectedRoute = ({ children }) => {
