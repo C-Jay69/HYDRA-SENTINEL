@@ -121,7 +121,7 @@ async def update_user_profile(
 
 
 @router.get("/children", response_model=List[Child])
-async def get_user_children(token_payload: dict = Depends(jwt_bearer)):
+async def get_user_children(token_payload: dict = Depends(get_current_user)):
     """Get all children belonging to the current user"""
     try:
         children = await db.find_children_by_user(token_payload["user_id"])
