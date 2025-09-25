@@ -181,7 +181,7 @@ async def stripe_webhook(webhook_data: WebhookEvent):
 
 
 @router.get("/subscription-status")
-async def get_subscription_status(token_payload: dict = Depends(jwt_bearer)):
+async def get_subscription_status(token_payload: dict = Depends(get_current_user)):
     """Get user's current subscription status"""
     try:
         user = await db.find_one("users", {"_id": token_payload["user_id"]})
