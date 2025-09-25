@@ -295,7 +295,7 @@ async def refresh_token(token_request: RefreshTokenRequest):
 
 
 @router.get("/me")
-async def get_current_user(token_payload: dict = Depends(jwt_bearer)):
+async def get_user_profile(token_payload: dict = Depends(get_current_user)):
     """Get current user profile"""
     try:
         user = await db.find_one("users", {"_id": token_payload["user_id"]})
