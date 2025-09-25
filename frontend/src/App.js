@@ -44,6 +44,22 @@ function AppContent() {
               </ProtectedRoute>
             } 
           />
+          <Route 
+            path="/billing" 
+            element={
+              <ProtectedRoute>
+                <Billing />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin" 
+            element={
+              <ProtectedRoute>
+                <AdminPanel />
+              </ProtectedRoute>
+            } 
+          />
         </Routes>
       </BrowserRouter>
       <Toaster />
