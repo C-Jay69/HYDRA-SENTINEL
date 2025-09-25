@@ -329,6 +329,6 @@ async def get_user_profile(token_payload: dict = Depends(get_current_user)):
 
 
 @router.post("/logout")
-async def logout(token_payload: dict = Depends(jwt_bearer)):
+async def logout(token_payload: dict = Depends(get_current_user)):
     """Logout user (invalidate token on client side)"""
     return {"message": "Successfully logged out"}
