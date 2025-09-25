@@ -34,6 +34,14 @@ function AppContent() {
               </ProtectedRoute>
             } 
           />
+          <Route 
+            path="/add-child" 
+            element={
+              <ProtectedRoute>
+                <AddChild />
+              </ProtectedRoute>
+            } 
+          />
         </Routes>
       </BrowserRouter>
       <Toaster />
