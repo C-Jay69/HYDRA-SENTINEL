@@ -513,8 +513,7 @@ const Dashboard = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {mockApps
-                      .filter(a => a.childId === selectedChild.id)
+                    {apps
                       .map((app) => (
                         <div key={app.id} className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg">
                           <div className="flex items-center gap-3">
