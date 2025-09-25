@@ -1,5 +1,4 @@
 from fastapi import APIRouter, HTTPException, Depends, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
@@ -8,22 +7,11 @@ import logging
 from models.user import User, UserCreate, UserLogin, GoogleAuthRequest, SubscriptionPlan
 from services.auth_service import AuthService
 from database import db
+from auth_deps import get_current_user
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
-security = HTTPBearer()
-
-def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
-    """Dependency to get current user from JWT token"""
-    token = credentials.credentials
-    payload = AuthService.verify_token(token)
-    if not payload:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired token"
-        )
-    return payload
 
 
 class TokenResponse(BaseModel):
