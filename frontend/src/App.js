@@ -5,6 +5,7 @@ import { Toaster } from "./components/ui/toaster";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import Landing from "./pages/Landing";
 import Dashboard from "./pages/Dashboard";
+import Login from "./pages/Login";
 
 // Protected Route component
 const ProtectedRoute = ({ children }) => {
