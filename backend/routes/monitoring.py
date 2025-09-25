@@ -43,7 +43,7 @@ async def verify_child_ownership(child_id: str, user_id: str):
 async def get_call_logs(
     child_id: str,
     limit: int = Query(50, ge=1, le=200),
-    token_payload: dict = Depends(jwt_bearer)
+    token_payload: dict = Depends(get_current_user)
 ):
     """Get call logs for a specific child"""
     try:
@@ -66,7 +66,7 @@ async def get_call_logs(
 async def get_messages(
     child_id: str,
     limit: int = Query(50, ge=1, le=200),
-    token_payload: dict = Depends(jwt_bearer)
+    token_payload: dict = Depends(get_current_user)
 ):
     """Get messages for a specific child"""
     try:
@@ -89,7 +89,7 @@ async def get_messages(
 async def get_locations(
     child_id: str,
     limit: int = Query(50, ge=1, le=200),
-    token_payload: dict = Depends(jwt_bearer)
+    token_payload: dict = Depends(get_current_user)
 ):
     """Get location history for a specific child"""
     try:
@@ -112,7 +112,7 @@ async def get_locations(
 async def get_app_usage(
     child_id: str,
     limit: int = Query(50, ge=1, le=200),
-    token_payload: dict = Depends(jwt_bearer)
+    token_payload: dict = Depends(get_current_user)
 ):
     """Get app usage data for a specific child"""
     try:
@@ -135,7 +135,7 @@ async def get_app_usage(
 async def get_web_history(
     child_id: str,
     limit: int = Query(50, ge=1, le=200),
-    token_payload: dict = Depends(jwt_bearer)
+    token_payload: dict = Depends(get_current_user)
 ):
     """Get web browsing history for a specific child"""
     try:
@@ -159,7 +159,7 @@ async def get_alerts(
     child_id: str,
     unread_only: bool = Query(False),
     limit: int = Query(50, ge=1, le=200),
-    token_payload: dict = Depends(jwt_bearer)
+    token_payload: dict = Depends(get_current_user)
 ):
     """Get alerts for a specific child"""
     try:
@@ -191,7 +191,7 @@ async def get_alerts(
 async def mark_alert_as_read(
     child_id: str,
     alert_id: str,
-    token_payload: dict = Depends(jwt_bearer)
+    token_payload: dict = Depends(get_current_user)
 ):
     """Mark an alert as read"""
     try:
@@ -225,7 +225,7 @@ async def mark_alert_as_read(
 async def dismiss_alert(
     child_id: str,
     alert_id: str,
-    token_payload: dict = Depends(jwt_bearer)
+    token_payload: dict = Depends(get_current_user)
 ):
     """Dismiss (delete) an alert"""
     try:
@@ -257,7 +257,7 @@ async def dismiss_alert(
 @router.get("/{child_id}/geofences", response_model=List[Geofence])
 async def get_geofences(
     child_id: str,
-    token_payload: dict = Depends(jwt_bearer)
+    token_payload: dict = Depends(get_current_user)
 ):
     """Get geofences for a specific child"""
     try:
@@ -279,7 +279,7 @@ async def get_geofences(
 @router.get("/{child_id}/contacts", response_model=List[Contact])
 async def get_contacts(
     child_id: str,
-    token_payload: dict = Depends(jwt_bearer)
+    token_payload: dict = Depends(get_current_user)
 ):
     """Get contacts for a specific child"""
     try:
@@ -301,7 +301,7 @@ async def get_contacts(
 @router.get("/{child_id}/summary")
 async def get_child_summary(
     child_id: str,
-    token_payload: dict = Depends(jwt_bearer)
+    token_payload: dict = Depends(get_current_user)
 ):
     """Get summary statistics for a child"""
     try:
