@@ -17,7 +17,17 @@ router = APIRouter(prefix="/api/monitoring", tags=["Monitoring"])
 
 async def verify_child_ownership(child_id: str, user_id: str):
     """Verify that the child belongs to the user"""
+    from bson import ObjectId
+    
+    # Try both string and ObjectId formats for child_id and user_id
     child = await db.find_one("children", {"_id": child_id, "user_id": user_id})
+    if not child:
+        try:
+            # Try with ObjectId
+            child = await db.find_one("children", {"_id": ObjectId(child_id), "user_id": user_id})
+        except:
+            pass
+    
     if not child:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
