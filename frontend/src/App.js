@@ -7,6 +7,8 @@ import Landing from "./pages/Landing";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import AddChild from "./pages/AddChild";
+import Billing from "./pages/Billing";
+import AdminPanel from "./pages/AdminPanel";
 
 // Protected Route component
 const ProtectedRoute = ({ children }) => {
