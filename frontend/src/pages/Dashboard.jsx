@@ -26,8 +26,20 @@ import { usersAPI, monitoringAPI } from '../services/api';
 import { useToast } from '../hooks/use-toast';
 
 const Dashboard = () => {
-  const [selectedChild, setSelectedChild] = useState(mockUser.children[0]);
-  const [alerts, setAlerts] = useState(mockAlerts);
+  const { user } = useAuth();
+  const { toast } = useToast();
+  
+  // State management
+  const [children, setChildren] = useState([]);
+  const [selectedChild, setSelectedChild] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [alerts, setAlerts] = useState([]);
+  const [callLogs, setCallLogs] = useState([]);
+  const [messages, setMessages] = useState([]);
+  const [locations, setLocations] = useState([]);
+  const [apps, setApps] = useState([]);
+  const [webHistory, setWebHistory] = useState([]);
+  const [summary, setSummary] = useState({});
 
   const markAlertAsRead = (alertId) => {
     setAlerts(alerts.map(alert => 
