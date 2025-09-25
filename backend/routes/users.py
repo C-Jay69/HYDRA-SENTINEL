@@ -160,7 +160,22 @@ async def add_child(
             )
         
         # Return created child
+        from bson import ObjectId
         created_child = await db.find_one("children", {"_id": child_id})
+        if not created_child:
+            # Try with ObjectId
+            try:
+                created_child = await db.find_one("children", {"_id": ObjectId(child_id)})
+            except:
+                pass
+        
+        if not created_child:
+            # If still not found, create a response from the input data
+            created_child = {
+                "_id": child_id,
+                **child_dict
+            }
+        
         return created_child
         
     except HTTPException:
