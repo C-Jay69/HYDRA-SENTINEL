@@ -1,5 +1,4 @@
 from fastapi import APIRouter, HTTPException, Depends, status, Query
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import List, Optional
 import logging
 from datetime import datetime
@@ -8,24 +7,12 @@ from models.monitoring import (
     CallLog, Message, Location, AppUsage, WebHistory, 
     Alert, Geofence, Contact, ControlSettings
 )
-from services.auth_service import AuthService
 from database import db
+from auth_deps import get_current_user
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/monitoring", tags=["Monitoring"])
-security = HTTPBearer()
-
-def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
-    """Dependency to get current user from JWT token"""
-    token = credentials.credentials
-    payload = AuthService.verify_token(token)
-    if not payload:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired token"
-        )
-    return payload
 
 
 async def verify_child_ownership(child_id: str, user_id: str):
