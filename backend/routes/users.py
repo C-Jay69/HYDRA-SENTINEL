@@ -1,10 +1,10 @@
 from fastapi import APIRouter, HTTPException, Depends, status
-from fastapi.security import HTTPBearer
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import List
 import logging
 
 from models.user import User, UserUpdate, Child, ChildCreate, ChildUpdate
-from services.auth_service import JWTBearer
+from services.auth_service import AuthService
 from database import db
 
 logger = logging.getLogger(__name__)
