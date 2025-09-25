@@ -28,6 +28,7 @@ import { usersAPI, monitoringAPI } from '../services/api';
 import { useToast } from '../hooks/use-toast';
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
   
