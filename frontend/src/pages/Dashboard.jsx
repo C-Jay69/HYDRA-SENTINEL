@@ -387,8 +387,7 @@ const Dashboard = () => {
                   <CardTitle className="text-white">Recent Activity</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {mockMessages
-                    .filter(m => m.childId === selectedChild.id)
+                  {messages
                     .slice(0, 3)
                     .map((message) => (
                       <div key={message.id} className="flex items-start gap-3 p-3 bg-gray-700/50 rounded-lg">
