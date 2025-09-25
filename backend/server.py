@@ -45,6 +45,14 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+@app.on_event("startup")
+async def startup_event():
+    """Initialize database indexes on startup"""
+    await db.initialize_indexes()
+    logger.info("ParentGuard API started successfully")
+
 @app.on_event("shutdown")
 async def shutdown_db_client():
-    client.close()
+    """Close database connection on shutdown"""
+    db.client.close()
+    logger.info("Database connection closed")
