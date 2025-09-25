@@ -4,13 +4,12 @@ from typing import List, Optional
 import logging
 
 from models.monitoring import ControlSettings, Geofence
-from services.auth_service import JWTBearer
 from database import db
+from auth_deps import get_current_user
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/control", tags=["Control"])
-jwt_bearer = JWTBearer()
 
 
 class AppControlRequest(BaseModel):
