@@ -10,7 +10,18 @@ from database import db
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/users", tags=["Users"])
-jwt_bearer = JWTBearer()
+security = HTTPBearer()
+
+def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Dependency to get current user from JWT token"""
+    token = credentials.credentials
+    payload = AuthService.verify_token(token)
+    if not payload:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired token"
+        )
+    return payload
 
 
 @router.get("/profile")
