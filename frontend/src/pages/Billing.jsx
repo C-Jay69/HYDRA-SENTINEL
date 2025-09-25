@@ -119,27 +119,30 @@ const Billing = () => {
     
     setLoading(true);
     try {
-      // Here we'll integrate with Stripe
       toast({
-        title: "Redirecting to Stripe",
+        title: "Creating Payment Session",
         description: "Please wait while we set up your payment..."
       });
       
-      // Simulate API call to create Stripe checkout session
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Create Stripe checkout session
+      const response = await paymentsAPI.createCheckoutSession(planId);
       
-      // In real implementation, redirect to Stripe Checkout
-      // window.location.href = stripeCheckoutUrl;
-      
-      toast({
-        title: "Payment Processing",
-        description: "This would redirect to Stripe checkout in production",
-      });
+      if (response.checkout_url) {
+        // Redirect to Stripe checkout
+        window.location.href = response.checkout_url;
+      } else {
+        toast({
+          title: "Payment Session Created",
+          description: "Stripe integration ready - add your API keys to complete setup",
+        });
+      }
       
     } catch (error) {
+      console.error('Payment error:', error);
+      const errorMessage = error.response?.data?.detail || error.message || "Failed to process payment";
       toast({
-        title: "Payment Error",
-        description: "Failed to process payment. Please try again.",
+        title: "Payment Error", 
+        description: typeof errorMessage === 'string' ? errorMessage : "Failed to create payment session",
         variant: "destructive"
       });
     } finally {
