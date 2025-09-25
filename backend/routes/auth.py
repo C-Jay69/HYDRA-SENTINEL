@@ -1,12 +1,12 @@
 from fastapi import APIRouter, HTTPException, Depends, status
-from fastapi.security import HTTPBearer
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
 import logging
 
 from models.user import User, UserCreate, UserLogin, GoogleAuthRequest, SubscriptionPlan
-from services.auth_service import AuthService, JWTBearer
+from services.auth_service import AuthService
 from database import db
 
 logger = logging.getLogger(__name__)
