@@ -276,10 +276,10 @@ const Dashboard = () => {
                         </div>
                       </div>
                     </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
+                    </Card>
+                  ))}
+                </div>
+              )}
 
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
