@@ -108,9 +108,12 @@ const Dashboard = () => {
       setSummary(summaryData);
     } catch (error) {
       console.error('Failed to load child data:', error);
+      const errorMessage = error.response?.data?.detail || 
+                          error.message || 
+                          "Failed to load monitoring data";
       toast({
         title: "Error",
-        description: "Failed to load monitoring data",
+        description: typeof errorMessage === 'string' ? errorMessage : "Failed to load monitoring data",
         variant: "destructive"
       });
     }
