@@ -8,8 +8,8 @@ import DeviceInfo from 'react-native-device-info';
 
 class ApiService {
   constructor() {
-    // Backend URL - should match your backend server
-    this.baseURL = 'https://your-backend-url.com/api'; // Update with your backend URL
+    // Backend URL - matches the web dashboard backend
+    this.baseURL = 'https://guardianapp-9.preview.emergentagent.com/api'; // Updated to match existing backend
     this.deviceId = null;
     this.authToken = null;
   }
