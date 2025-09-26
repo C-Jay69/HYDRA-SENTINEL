@@ -183,15 +183,33 @@ const App = () => {
 
   const toggleStealthMode = async () => {
     const newStealthMode = !stealthMode;
-    setStealthMode(newStealthMode);
-    await AsyncStorage.setItem('stealth_mode', newStealthMode.toString());
     
     if (newStealthMode) {
-      Alert.alert(
-        'Stealth Mode Enabled',
-        'The app will now be hidden and run silently in the background.',
-        [{ text: 'OK' }]
-      );
+      const success = await StealthService.enableStealthMode();
+      if (success) {
+        setStealthMode(true);
+        Alert.alert(
+          'Stealth Mode Enabled',
+          'The app will now be hidden and run silently in the background.',
+          [{ text: 'OK' }]
+        );
+      }
+    } else {
+      const success = await StealthService.disableStealthMode();
+      if (success) {
+        setStealthMode(false);
+        Alert.alert(
+          'Stealth Mode Disabled',
+          'The app is now visible and can be accessed normally.',
+          [{ text: 'OK' }]
+        );
+      } else {
+        Alert.alert(
+          'Access Denied',
+          'Administrator password required to disable stealth mode.',
+          [{ text: 'OK' }]
+        );
+      }
     }
   };
 
