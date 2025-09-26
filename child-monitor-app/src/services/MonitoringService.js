@@ -305,7 +305,7 @@ class MonitoringService {
     } catch (error) {
       return {
         isConnected: false,
-        timestamp: new.toISOString(),
+        timestamp: new Date().toISOString(),
         error: error.message
       };
     }
