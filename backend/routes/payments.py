@@ -127,20 +127,20 @@ async def create_checkout_session(
 async def stripe_webhook(webhook_data: WebhookEvent):
     """Handle Stripe webhook events"""
     try:
-        # In production, verify webhook signature:
+        # Real Stripe webhook verification (optional - for production use)
         # import stripe
         # endpoint_secret = os.environ.get('STRIPE_ENDPOINT_SECRET')
         # 
-        # try:
-        #     event = stripe.Webhook.construct_event(
-        #         payload, sig_header, endpoint_secret
-        #     )
-        # except ValueError as e:
-        #     # Invalid payload
-        #     raise HTTPException(status_code=400, detail="Invalid payload")
-        # except stripe.error.SignatureVerificationError as e:
-        #     # Invalid signature
-        #     raise HTTPException(status_code=400, detail="Invalid signature")
+        # if endpoint_secret:
+        #     try:
+        #         sig_header = request.headers.get('stripe-signature')
+        #         event = stripe.Webhook.construct_event(
+        #             payload, sig_header, endpoint_secret
+        #         )
+        #     except ValueError as e:
+        #         raise HTTPException(status_code=400, detail="Invalid payload")
+        #     except stripe.error.SignatureVerificationError as e:
+        #         raise HTTPException(status_code=400, detail="Invalid signature")
 
         event_type = webhook_data.type
         
