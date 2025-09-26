@@ -107,63 +107,78 @@ user_problem_statement: "Complete React Native child monitoring app development 
 backend:
   - task: "Mobile Device Registration Endpoint"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/routes/monitoring.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Added /devices/register endpoint for mobile app to register and get child_id"
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - Device registration working correctly. Fixed missing insert_one method in database.py. Endpoint properly creates device and child records, generates UUID child_id, handles duplicate registrations by updating existing records."
 
   - task: "Mobile Data Sync Endpoints"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/routes/monitoring.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Added batch endpoints for call logs, location, app usage, contacts, social media activities"
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - All batch sync endpoints working perfectly. Tested: call logs batch (2/2 synced), location sync, app usage batch (2/2 synced), contacts batch (2/2 synced), social media batch (2/2 synced). All endpoints properly store data in MongoDB collections with correct child_id association."
 
   - task: "Social Media Activity Storage"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/routes/monitoring.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Added endpoint to sync social media monitoring data from mobile app"
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - Social media batch sync endpoint working correctly. Successfully tested with Instagram and TikTok activity data. Endpoint properly stores social media activities with app, package name, event type, content, and timestamp."
 
   - task: "Remote Control Commands"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/routes/control.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Added remote control endpoints for app blocking, emergency location, screenshots"
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - All remote control endpoints working perfectly. Tested: remote app blocking (creates device commands), emergency location request, remote screenshot request, settings update, command history retrieval. All endpoints properly create commands in device_commands collection and require authentication."
 
   - task: "Device Status Updates"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/routes/monitoring.py"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Added device status and heartbeat endpoints for mobile app"
+      - working: true
+        agent: "testing"
+        comment: "✅ PASSED - Device status update endpoint working correctly. Successfully updates device status, battery level, charging status, and monitoring status. Also tested alert creation, control events batch sync, and security events batch sync - all working properly."
 
 frontend:
   - task: "React Native Mobile App Core"
