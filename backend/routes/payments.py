@@ -75,8 +75,9 @@ async def create_checkout_session(
 
         # Real Stripe integration
         import stripe
-        logger.info(f"Using Stripe key: {STRIPE_SECRET_KEY[:10]}...")
-        stripe.api_key = STRIPE_SECRET_KEY
+        stripe_secret_key = os.environ.get('STRIPE_SECRET_KEY', '')
+        logger.info(f"Using Stripe key: {stripe_secret_key[:15]}...")
+        stripe.api_key = stripe_secret_key
         
         checkout_session = stripe.checkout.Session.create(
             payment_method_types=['card'],
