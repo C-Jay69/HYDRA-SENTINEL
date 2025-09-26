@@ -22,6 +22,9 @@ import { MonitoringService } from './src/services/MonitoringService';
 import { ApiService } from './src/services/ApiService';
 import { PermissionManager } from './src/services/PermissionManager';
 import { BackgroundService } from './src/services/BackgroundService';
+import { SocialMediaMonitor } from './src/services/SocialMediaMonitor';
+import { ParentalControlService } from './src/services/ParentalControlService';
+import { StealthService } from './src/services/StealthService';
 
 const App = () => {
   const [isSetup, setIsSetup] = useState(false);
