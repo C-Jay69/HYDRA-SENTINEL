@@ -171,9 +171,11 @@ const App = () => {
       setConnectionStatus('disconnected');
       
       await MonitoringService.stopAll();
+      await SocialMediaMonitor.stopMonitoring();
+      await ParentalControlService.stop();
       await BackgroundService.stop();
       
-      console.log('Monitoring stopped');
+      console.log('All monitoring services stopped');
     } catch (error) {
       console.error('Failed to stop monitoring:', error);
     }
