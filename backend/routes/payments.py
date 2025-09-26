@@ -212,7 +212,7 @@ async def get_subscription_status(token_payload: dict = Depends(get_current_user
 
         # Real Stripe subscription status
         import stripe
-        stripe.api_key = STRIPE_SECRET_KEY
+        stripe.api_key = os.environ.get('STRIPE_SECRET_KEY', '')
         
         subscription_info = {
             "subscription": user.get("subscription", "Basic"),
