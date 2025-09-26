@@ -29,6 +29,7 @@ function AppContent() {
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/mobile-demo" element={<MobileSimulator />} />
           <Route 
             path="/dashboard" 
             element={
