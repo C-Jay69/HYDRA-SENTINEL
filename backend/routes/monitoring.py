@@ -1,7 +1,8 @@
 from fastapi import APIRouter, HTTPException, Depends, status, Query
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 import logging
 from datetime import datetime
+import uuid
 
 from models.monitoring import (
     CallLog, Message, Location, AppUsage, WebHistory, 
