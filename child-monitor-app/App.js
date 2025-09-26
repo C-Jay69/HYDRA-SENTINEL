@@ -145,13 +145,19 @@ const App = () => {
       // Start all monitoring services
       await MonitoringService.startAll();
       
+      // Start social media monitoring
+      await SocialMediaMonitor.startMonitoring();
+      
+      // Start parental control service
+      await ParentalControlService.start();
+      
       // Start background service
       await BackgroundService.start();
       
       setConnectionStatus('connected');
       setLastSync(new Date().toLocaleString());
       
-      console.log('Monitoring started successfully');
+      console.log('All monitoring services started successfully');
     } catch (error) {
       console.error('Failed to start monitoring:', error);
       setConnectionStatus('error');
