@@ -225,6 +225,13 @@ const Landing = () => {
                 </Button>
                 <Button 
                   size="lg"
+                  className="bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-700 hover:to-cyan-600 text-white px-8 py-4 text-lg font-semibold"
+                  onClick={() => navigate('/mobile-demo')}
+                >
+                  📱 VIEW MOBILE APP DEMO
+                </Button>
+                <Button 
+                  size="lg"
                   variant="outline"
                   className="border-gray-600 text-gray-300 hover:bg-gray-800 px-8 py-4 text-lg"
                   onClick={() => navigate('/login')}
