@@ -210,25 +210,38 @@ async def get_subscription_status(token_payload: dict = Depends(get_current_user
                 detail="User not found"
             )
 
-        # In production, fetch from Stripe:
-        # import stripe
-        # stripe.api_key = STRIPE_SECRET_KEY
-        # 
-        # if user.get('stripe_customer_id'):
-        #     subscriptions = stripe.Subscription.list(
-        #         customer=user['stripe_customer_id'],
-        #         status='active'
-        #     )
-        #     # Process subscription data
-
-        # Mock subscription status
-        return {
+        # Real Stripe subscription status
+        import stripe
+        stripe.api_key = STRIPE_SECRET_KEY
+        
+        subscription_info = {
             "subscription": user.get("subscription", "Basic"),
             "status": "active",
             "current_period_end": "2024-10-01",
             "cancel_at_period_end": False,
             "billing_cycle_anchor": "2024-09-01"
         }
+        
+        # If user has a Stripe customer ID, fetch real subscription data
+        if user.get('stripe_customer_id'):
+            try:
+                subscriptions = stripe.Subscription.list(
+                    customer=user['stripe_customer_id'],
+                    status='active',
+                    limit=1
+                )
+                
+                if subscriptions.data:
+                    sub = subscriptions.data[0]
+                    subscription_info.update({
+                        "status": sub.status,
+                        "current_period_end": sub.current_period_end,
+                        "cancel_at_period_end": sub.cancel_at_period_end
+                    })
+            except Exception as e:
+                logger.error(f"Error fetching Stripe subscription: {e}")
+        
+        return subscription_info
 
     except HTTPException:
         raise
