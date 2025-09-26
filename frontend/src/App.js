@@ -9,6 +9,7 @@ import Login from "./pages/Login";
 import AddChild from "./pages/AddChild";
 import Billing from "./pages/Billing";
 import AdminPanel from "./pages/AdminPanel";
+import MobileSimulator from "./pages/MobileSimulator";
 
 // Protected Route component
 const ProtectedRoute = ({ children }) => {
