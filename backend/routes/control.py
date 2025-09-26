@@ -368,3 +368,237 @@ async def delete_geofence(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to delete geofence"
         )
+
+
+# ===== MOBILE DEVICE REMOTE CONTROL =====
+# These endpoints allow parents to send commands to the mobile device
+
+@router.post("/{child_id}/remote/block-app")
+async def remote_block_app(
+    child_id: str,
+    app_control: AppControlRequest,
+    token_payload: dict = Depends(get_current_user)
+):
+    """Send remote command to block/unblock an app on the mobile device"""
+    try:
+        await verify_child_ownership(child_id, token_payload["user_id"])
+        
+        # Get device ID for this child
+        device = await db.find_one("devices", {"child_id": child_id})
+        if not device:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Device not found for this child"
+            )
+        
+        # Create remote command
+        command = {
+            "device_id": device["device_id"],
+            "child_id": child_id,
+            "type": "block_app" if app_control.blocked else "unblock_app",
+            "data": {
+                "packageName": app_control.package_name,
+                "blocked": app_control.blocked,
+                "timeLimit": app_control.time_limit
+            },
+            "status": "pending",
+            "created_at": datetime.utcnow().isoformat(),
+            "created_by": token_payload["user_id"]
+        }
+        
+        command_id = await db.create_one("device_commands", command)
+        
+        # Also update the local control settings
+        await control_app(child_id, app_control, token_payload)
+        
+        return {
+            "message": f"Remote command sent to {'block' if app_control.blocked else 'unblock'} app",
+            "command_id": command_id
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Remote block app error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to send remote app control command"
+        )
+
+
+@router.post("/{child_id}/remote/emergency-location")
+async def request_emergency_location(
+    child_id: str,
+    token_payload: dict = Depends(get_current_user)
+):
+    """Request immediate location update from mobile device"""
+    try:
+        await verify_child_ownership(child_id, token_payload["user_id"])
+        
+        # Get device ID for this child
+        device = await db.find_one("devices", {"child_id": child_id})
+        if not device:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Device not found for this child"
+            )
+        
+        # Create emergency location command
+        command = {
+            "device_id": device["device_id"],
+            "child_id": child_id,
+            "type": "emergency_location",
+            "data": {
+                "priority": "high",
+                "requested_by": token_payload["user_id"]
+            },
+            "status": "pending",
+            "created_at": datetime.utcnow().isoformat(),
+            "created_by": token_payload["user_id"]
+        }
+        
+        command_id = await db.create_one("device_commands", command)
+        
+        return {
+            "message": "Emergency location request sent to device",
+            "command_id": command_id
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Emergency location request error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to request emergency location"
+        )
+
+
+@router.post("/{child_id}/remote/screenshot")
+async def request_screenshot(
+    child_id: str,
+    token_payload: dict = Depends(get_current_user)
+):
+    """Request screenshot from mobile device"""
+    try:
+        await verify_child_ownership(child_id, token_payload["user_id"])
+        
+        # Get device ID for this child
+        device = await db.find_one("devices", {"child_id": child_id})
+        if not device:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Device not found for this child"
+            )
+        
+        # Create screenshot command
+        command = {
+            "device_id": device["device_id"],
+            "child_id": child_id,
+            "type": "take_screenshot",
+            "data": {
+                "quality": "medium",
+                "requested_by": token_payload["user_id"]
+            },
+            "status": "pending",
+            "created_at": datetime.utcnow().isoformat(),
+            "created_by": token_payload["user_id"]
+        }
+        
+        command_id = await db.create_one("device_commands", command)
+        
+        return {
+            "message": "Screenshot request sent to device",
+            "command_id": command_id
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Screenshot request error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to request screenshot"
+        )
+
+
+@router.post("/{child_id}/remote/update-settings")
+async def remote_update_settings(
+    child_id: str,
+    settings_data: dict,
+    token_payload: dict = Depends(get_current_user)
+):
+    """Send settings update to mobile device"""
+    try:
+        await verify_child_ownership(child_id, token_payload["user_id"])
+        
+        # Get device ID for this child
+        device = await db.find_one("devices", {"child_id": child_id})
+        if not device:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Device not found for this child"
+            )
+        
+        # Create settings update command
+        command = {
+            "device_id": device["device_id"],
+            "child_id": child_id,
+            "type": "update_settings",
+            "data": settings_data,
+            "status": "pending",
+            "created_at": datetime.utcnow().isoformat(),
+            "created_by": token_payload["user_id"]
+        }
+        
+        command_id = await db.create_one("device_commands", command)
+        
+        return {
+            "message": "Settings update sent to device",
+            "command_id": command_id
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Remote settings update error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to send settings update"
+        )
+
+
+@router.get("/{child_id}/remote/commands")
+async def get_remote_commands(
+    child_id: str,
+    token_payload: dict = Depends(get_current_user)
+):
+    """Get list of remote commands sent to device"""
+    try:
+        await verify_child_ownership(child_id, token_payload["user_id"])
+        
+        commands = await db.find_many(
+            "device_commands",
+            {"child_id": child_id},
+            sort=[("created_at", -1)],
+            limit=50
+        )
+        
+        return {
+            "commands": commands,
+            "total": len(commands)
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Get remote commands error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to get remote commands"
+        )
+
+
+# Import datetime at the top of the file
+import uuid
+from datetime import datetime
