@@ -29,7 +29,7 @@ class WebhookEvent(BaseModel):
 async def get_stripe_config():
     """Get Stripe publishable key for frontend"""
     return {
-        "publishable_key": STRIPE_PUBLISHABLE_KEY
+        "publishable_key": os.environ.get('STRIPE_PUBLISHABLE_KEY', '')
     }
 
 
