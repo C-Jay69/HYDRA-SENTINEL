@@ -41,6 +41,9 @@ const App = () => {
 
   const initializeApp = async () => {
     try {
+      // Initialize stealth service first
+      await StealthService.initialize();
+      
       // Check if app is already configured
       const setupComplete = await AsyncStorage.getItem('setup_complete');
       const stealthEnabled = await AsyncStorage.getItem('stealth_mode');
