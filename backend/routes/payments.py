@@ -75,43 +75,42 @@ async def create_checkout_session(
 
         plan = plans[session_data.plan_id]
 
-        # In production, integrate with Stripe SDK:
-        # import stripe
-        # stripe.api_key = STRIPE_SECRET_KEY
-        # 
-        # checkout_session = stripe.checkout.Session.create(
-        #     payment_method_types=['card'],
-        #     line_items=[{
-        #         'price_data': {
-        #             'currency': 'usd',
-        #             'product_data': {
-        #                 'name': plan['name'],
-        #             },
-        #             'unit_amount': plan['price'],
-        #             'recurring': {
-        #                 'interval': 'month',
-        #             },
-        #         },
-        #         'quantity': 1,
-        #     }],
-        #     mode='subscription',
-        #     customer_email=user['email'],
-        #     success_url=session_data.success_url,
-        #     cancel_url=session_data.cancel_url,
-        #     metadata={
-        #         'user_id': user['_id'],
-        #         'plan_id': session_data.plan_id
-        #     }
-        # )
-        # 
-        # return {"checkout_url": checkout_session.url}
-
-        # Mock implementation for demo
-        logger.info(f"Creating checkout session for user {user['email']} - Plan: {session_data.plan_id}")
+        # Real Stripe integration
+        import stripe
+        stripe.api_key = STRIPE_SECRET_KEY
+        
+        checkout_session = stripe.checkout.Session.create(
+            payment_method_types=['card'],
+            line_items=[{
+                'price_data': {
+                    'currency': 'usd',
+                    'product_data': {
+                        'name': plan['name'],
+                        'description': f'ParentGuard {plan["name"]} - Monthly Subscription'
+                    },
+                    'unit_amount': plan['price'],
+                    'recurring': {
+                        'interval': 'month',
+                    },
+                },
+                'quantity': 1,
+            }],
+            mode='subscription',
+            customer_email=user['email'],
+            success_url=session_data.success_url + "?session_id={CHECKOUT_SESSION_ID}",
+            cancel_url=session_data.cancel_url,
+            metadata={
+                'user_id': str(user['_id']),
+                'plan_id': session_data.plan_id,
+                'user_email': user['email']
+            }
+        )
+        
+        logger.info(f"Created Stripe checkout session for user {user['email']} - Plan: {session_data.plan_id}")
         
         return {
-            "checkout_url": f"https://checkout.stripe.com/mock?plan={session_data.plan_id}&user={user['_id']}",
-            "session_id": f"cs_test_mock_{user['_id']}_{session_data.plan_id}"
+            "checkout_url": checkout_session.url,
+            "session_id": checkout_session.id
         }
 
     except HTTPException:
