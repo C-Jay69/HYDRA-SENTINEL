@@ -11,9 +11,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/payments", tags=["Payments"])
 
-# Stripe configuration (add your keys to .env)
-STRIPE_PUBLISHABLE_KEY = os.environ.get('STRIPE_PUBLISHABLE_KEY', 'pk_test_...')
-STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY', 'sk_test_...')
+# Stripe configuration will be loaded from environment at runtime
 
 
 class CreateCheckoutSession(BaseModel):
