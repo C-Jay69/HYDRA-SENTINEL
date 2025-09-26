@@ -81,6 +81,10 @@ class Database:
             logger.error(f"Error creating document in {collection_name}: {e}")
             return None
     
+    async def insert_one(self, collection_name: str, document: dict) -> Optional[str]:
+        """Insert a single document (alias for create_one)"""
+        return await self.create_one(collection_name, document)
+    
     async def find_one(self, collection_name: str, filter_dict: dict) -> Optional[dict]:
         """Find a single document"""
         try:
