@@ -137,6 +137,30 @@ class Database:
             logger.error(f"Error deleting document in {collection_name}: {e}")
             return False
     
+    async def insert_many(self, collection_name: str, documents: List[dict]) -> bool:
+        """Insert multiple documents"""
+        try:
+            collection = getattr(self.db, collection_name)
+            for doc in documents:
+                doc['created_at'] = datetime.utcnow()
+                doc['updated_at'] = datetime.utcnow()
+            
+            result = await collection.insert_many(documents)
+            return len(result.inserted_ids) > 0
+        except Exception as e:
+            logger.error(f"Error inserting documents in {collection_name}: {e}")
+            return False
+    
+    async def delete_many(self, collection_name: str, filter_dict: dict) -> int:
+        """Delete multiple documents"""
+        try:
+            collection = getattr(self.db, collection_name)
+            result = await collection.delete_many(filter_dict)
+            return result.deleted_count
+        except Exception as e:
+            logger.error(f"Error deleting documents in {collection_name}: {e}")
+            return 0
+    
     async def count_documents(self, collection_name: str, filter_dict: dict = {}) -> int:
         """Count documents matching filter"""
         try:
