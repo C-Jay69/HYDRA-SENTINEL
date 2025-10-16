@@ -2,8 +2,9 @@ from fastapi import APIRouter, HTTPException, Depends, status, Query, Request
 from typing import List, Optional, Dict, Any
 import logging
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 import uuid
+import random
 
 from models.monitoring import (
     CallLog, Message, Location, AppUsage, WebHistory, 
@@ -83,6 +84,54 @@ async def delete_schedule(child_id: str, schedule_id: str, token_payload: dict =
         {"id": schedule_id}
     )
     return
+
+@router.get("/{child_id}/web-history", response_model=List[WebHistory])
+async def get_web_history(
+    child_id: str,
+    token_payload: dict = Depends(get_current_user),
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=100),
+    filter: Optional[str] = Query(None, description="Filter by domain or title")
+):
+    """
+    Retrieves web browsing history for a specific child, with pagination.
+    A mock implementation that generates plausible web history data.
+    """
+    await verify_child_ownership(child_id, token_payload["user_id"])
+
+    # Mock data generation
+    history_items = []
+    domains = ["youtube.com", "tiktok.com", "roblox.com", "netflix.com", "google.com", "discord.com"]
+    titles = {
+        "youtube.com": ["Funny Cat Videos", "How to build a PC", "Learn Python in 10 hours"],
+        "tiktok.com": ["Viral Dance Challenge", "Comedy Skit", "DIY Home Decor"],
+        "roblox.com": ["Adopt Me! Gameplay", "Tower of Hell Speedrun", "Jailbreak Heist"],
+        "netflix.com": ["Stranger Things", "The Witcher", "Squid Game"],
+        "google.com": ["How to tie a tie", "Weather forecast", "Python tutorials"],
+        "discord.com": ["Gaming Friends", "Study Group", "Art Community"]
+    }
+
+    start_time = datetime.utcnow()
+    for i in range(limit):
+        domain = random.choice(domains)
+        title = random.choice(titles[domain])
+        
+        # Apply filter if provided
+        if filter and not (filter.lower() in domain.lower() or filter.lower() in title.lower()):
+            continue
+
+        item = WebHistory(
+            id=str(uuid.uuid4()),
+            child_id=child_id,
+            url=f"https://{domain}/page/{i}",
+            title=title,
+            timestamp=start_time - timedelta(minutes=i*15 + page * limit),
+            domain=domain,
+            visit_duration=random.randint(10, 300)
+        )
+        history_items.append(item)
+
+    return history_items
 
 # --- Existing GET Endpoints & Mobile Sync ---
 

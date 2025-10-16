@@ -106,6 +106,24 @@ async def get_signups_analytics(timeRange: str = 'all'):
             
     return signups_data
 
+@router.get("/analytics/subscriptions", response_model=Dict[str, Any], dependencies=[Depends(verify_admin_user)])
+async def get_subscription_analytics(timeRange: str = 'all'):
+    """Provides a breakdown of subscription tiers for a given time range."""
+    # Mock data based on time range
+    if timeRange == '7d':
+        return {"Basic": 5, "Premium": 3, "Family": 1}
+    elif timeRange == '30d':
+        return {"Basic": 25, "Premium": 15, "Family": 8}
+    elif timeRange == '90d':
+        return {"Basic": 80, "Premium": 50, "Family": 25}
+    else: # all
+        total_users = await db.count_documents("users", {})
+        return {
+            "Basic": total_users * 0.6,
+            "Premium": total_users * 0.3,
+            "Family": total_users * 0.1
+        }
+
 @router.get("/users", response_model=List[Dict[str, Any]], dependencies=[Depends(verify_admin_user)])
 async def get_all_users():
     """Fetches a comprehensive list of all users and their associated children."""

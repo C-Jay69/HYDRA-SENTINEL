@@ -39,7 +39,14 @@ export const usersAPI = {
 
 // Monitoring API
 export const monitoringAPI = {
- // ... existing functions
+  getWebHistory: async (childId, page = 1, limit = 20, filter = null) => {
+    const params = { page, limit };
+    if (filter) {
+      params.filter = filter;
+    }
+    const response = await api.get(`/api/monitoring/${childId}/web-history`, { params });
+    return response.data;
+  },
 };
 
 // Control API
@@ -64,6 +71,10 @@ export const adminAPI = {
   },
   getSignupsAnalytics: async (timeRange) => {
     const response = await api.get('/api/admin/analytics/signups', { params: { timeRange } });
+    return response.data;
+  },
+  getSubscriptionAnalytics: async (timeRange) => {
+    const response = await api.get('/api/admin/analytics/subscriptions', { params: { timeRange } });
     return response.data;
   },
   getAllUsers: async () => {

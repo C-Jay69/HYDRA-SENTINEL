@@ -101,7 +101,72 @@ const Dashboard = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <>
-            {/* Child Selector, Stats, Alerts ... */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+              <Card className="bg-gray-800/50 border-gray-700 hover:border-blue-500/50 transition-colors">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium text-gray-400">SMS History</CardTitle>
+                  <MessageSquare className="w-4 h-4 text-gray-500" />
+                </CardHeader>
+                <CardContent>
+                  <p className="text-xs text-gray-500 mb-4">Monitor text messages.</p>
+                  <Button size="sm" onClick={() => navigate(`/dashboard/sms/${selectedChild?._id}`)} disabled={!selectedChild}>
+                    View Logs
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gray-800/50 border-gray-700 hover:border-blue-500/50 transition-colors">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium text-gray-400">Social Media</CardTitle>
+                  <Instagram className="w-4 h-4 text-gray-500" />
+                </CardHeader>
+                <CardContent>
+                  <p className="text-xs text-gray-500 mb-4">Check social media activity.</p>
+                  <Button size="sm" onClick={() => navigate(`/dashboard/social/${selectedChild?._id}`)} disabled={!selectedChild}>
+                    View Activity
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gray-800/50 border-gray-700 hover:border-blue-500/50 transition-colors">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium text-gray-400">Live Location</CardTitle>
+                  <MapPin className="w-4 h-4 text-gray-500" />
+                </CardHeader>
+                <CardContent>
+                  <p className="text-xs text-gray-500 mb-4">Track location in real-time.</p>
+                  <Button size="sm" onClick={() => navigate(`/dashboard/location/${selectedChild?._id}/live`)} disabled={!selectedChild}>
+                    Open Map
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gray-800/50 border-gray-700 hover:border-blue-500/50 transition-colors">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium text-gray-400">Screen Time</CardTitle>
+                  <Clock className="w-4 h-4 text-gray-500" />
+                </CardHeader>
+                <CardContent>
+                  <p className="text-xs text-gray-500 mb-4">Manage daily usage limits.</p>
+                  <Button size="sm" onClick={() => navigate(`/dashboard/screen-time/${selectedChild?._id}`)} disabled={!selectedChild}>
+                    Set Rules
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gray-800/50 border-gray-700 hover:border-blue-500/50 transition-colors">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium text-gray-400">Web History</CardTitle>
+                  <Globe className="w-4 h-4 text-gray-500" />
+                </CardHeader>
+                <CardContent>
+                  <p className="text-xs text-gray-500 mb-4">Track browsing activity.</p>
+                  <Button size="sm" onClick={() => navigate(`/dashboard/web-history/${selectedChild?._id}`)} disabled={!selectedChild}>
+                    View History
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
             
             <Tabs defaultValue="activity" className="space-y-6">
               {/* ... Tabs implementation */}
