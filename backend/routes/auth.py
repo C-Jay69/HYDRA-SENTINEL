@@ -199,7 +199,7 @@ async def google_auth(auth_request: GoogleAuthRequest):
         
         # Create tokens
         token_data = {"user_id": user["_id"], "email": user["email"]}
-        access_token = AuthService.create_access_token(token_data)
+        access_token = AuthService.create_access_.create_access_token(token_data)
         refresh_token = AuthService.create_refresh_token(token_data)
         
         # Update last login
@@ -329,5 +329,84 @@ async def get_user_profile(token_payload: dict = Depends(get_current_user)):
 
 @router.post("/logout")
 async def logout(token_payload: dict = Depends(get_current_user)):
-    """Logout user (invalidate token on client side)"""
-    return {"message": "Successfully logged out"}
+    """Logout user and blacklist token"""
+    try:
+        jti = token_payload.get("jti")
+        if not jti:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Token cannot be blacklisted"
+            )
+
+        await db.add_to_blacklist(jti)
+        return {"message": "Successfully logged out"}
+    except Exception as e:
+        logger.error(f"Logout error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Logout failed"
+        )
+
+@router.post("/request-password-reset", status_code=status.HTTP_200_OK)
+async def request_password_reset(email_request: EmailRequest):
+    """Request password reset"""
+    try:
+        user = await db.find_user_by_email(email_request.email)
+        if not user:
+            # Avoid user enumeration
+            return {"message": "If an account with this email exists, a password reset link has been sent."}
+
+        token = AuthService.create_password_reset_token(user["email"])
+        
+        # In a real application, you would send an email with this token
+        # For this example, we'll just log it
+        logger.info(f"Password reset token for {user['email']}: {token}")
+        
+        return {"message": "Password reset link has been sent to your email."}
+        
+    except Exception as e:
+        logger.error(f"Password reset request error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to request password reset"
+        )
+
+@router.post("/reset-password", status_code=status.HTTP_200_OK)
+async def reset_password(reset_request: PasswordResetRequest):
+    """Reset password"""
+    try:
+        # Verify password reset token
+        payload = AuthService.verify_password_reset_token(reset_request.token)
+        if not payload:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid or expired password reset token"
+            )
+        
+        user = await db.find_user_by_email(payload["email"])
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+        
+        # Hash new password
+        hashed_password = AuthService.hash_password(reset_request.new_password)
+        
+        # Update password
+        await db.update_one(
+            "users",
+            {"_id": user["_id"]},
+            {"password": hashed_password}
+        )
+        
+        return {"message": "Password has been reset successfully."}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Password reset error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to reset password"
+        )
