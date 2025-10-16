@@ -24,10 +24,14 @@ class ApiService {
     }
   }
 
+  async getChildId() {
+      return await AsyncStorage.getItem('child_id');
+  }
+
   // Authentication & Device Registration
   async registerDevice(deviceInfo) {
     try {
-      const response = await this.makeRequest('POST', '/devices/register', {
+      const response = await this.makeRequest('POST', '/monitoring/devices/register', {
         device_id: deviceInfo.deviceId,
         device_name: deviceInfo.deviceName,
         brand: deviceInfo.brand,
@@ -37,18 +41,11 @@ class ApiService {
         registration_timestamp: new Date().toISOString()
       });
 
-      if (response.success) {
-        // Store authentication token if provided
-        if (response.auth_token) {
-          this.authToken = response.auth_token;
-          await AsyncStorage.setItem('auth_token', response.auth_token);
-        }
-        
-        // Store device registration info
+      if (response.success && response.data.child_id) {
         await AsyncStorage.setItem('device_registered', 'true');
-        await AsyncStorage.setItem('child_id', response.child_id);
+        await AsyncStorage.setItem('child_id', response.data.child_id);
         
-        console.log('Device registered successfully');
+        console.log('Device registered successfully with child_id:', response.data.child_id);
         return true;
       }
       
@@ -62,8 +59,8 @@ class ApiService {
   // Check connection to backend
   async checkConnection() {
     try {
-      const response = await this.makeRequest('GET', '/health');
-      return response.status === 'healthy';
+      const response = await this.makeRequest('GET', '/monitoring/health');
+      return response.success && response.data.status === 'healthy';
     } catch (error) {
       console.error('Connection check failed:', error);
       return false;
@@ -73,265 +70,136 @@ class ApiService {
   // Sync Call Logs
   async syncCallLogs(callLogs) {
     try {
-      const childId = await AsyncStorage.getItem('child_id');
-      if (!childId) {
-        throw new Error('Child ID not found');
-      }
+      const childId = await this.getChildId();
+      if (!childId) throw new Error('Child ID not found');
 
       const response = await this.makeRequest('POST', `/monitoring/${childId}/calls/batch`, {
-        call_logs: callLogs,
-        sync_timestamp: new Date().toISOString()
+        call_logs: callLogs
       });
 
-      console.log(`Synced ${callLogs.length} call logs`);
-      return response.success;
+      if(response.success) console.log(`Synced ${response.data.synced} call logs`);
+      return response;
     } catch (error) {
       console.error('Call logs sync error:', error);
-      return false;
+      return { success: false };
+    }
+  }
+
+  // Sync SMS
+  async syncSms(smsMessages) {
+    try {
+      const childId = await this.getChildId();
+      if (!childId) throw new Error('Child ID not found');
+
+      const response = await this.makeRequest('POST', `/monitoring/${childId}/sms/batch`, {
+        sms_messages: smsMessages
+      });
+
+      if(response.success) console.log(`Synced ${response.data.synced} SMS messages`);
+      return response;
+    } catch (error) {
+      console.error('SMS sync error:', error);
+      return { success: false };
     }
   }
 
   // Sync Location
   async syncLocation(locationData) {
     try {
-      const childId = await AsyncStorage.getItem('child_id');
-      if (!childId) {
-        throw new Error('Child ID not found');
-      }
+      const childId = await this.getChildId();
+      if (!childId) throw new Error('Child ID not found');
 
       const response = await this.makeRequest('POST', `/monitoring/${childId}/location`, locationData);
       
-      console.log('Location synced successfully');
-      return response.success;
+      if(response.success) console.log('Location synced successfully');
+      return response;
     } catch (error) {
       console.error('Location sync error:', error);
-      return false;
+      return { success: false };
     }
   }
 
   // Sync App Usage
   async syncAppUsage(usageData) {
     try {
-      const childId = await AsyncStorage.getItem('child_id');
-      if (!childId) {
-        throw new Error('Child ID not found');
-      }
+      const childId = await this.getChildId();
+      if (!childId) throw new Error('Child ID not found');
 
       const response = await this.makeRequest('POST', `/monitoring/${childId}/apps/batch`, {
-        app_usage: usageData,
-        sync_timestamp: new Date().toISOString()
+        app_usage: usageData
       });
 
-      console.log(`Synced usage data for ${usageData.length} apps`);
-      return response.success;
+      if(response.success) console.log(`Synced usage data for ${response.data.synced} apps`);
+      return response;
     } catch (error) {
       console.error('App usage sync error:', error);
-      return false;
+      return { success: false };
     }
   }
 
   // Sync Contacts
   async syncContacts(contacts) {
     try {
-      const childId = await AsyncStorage.getItem('child_id');
-      if (!childId) {
-        throw new Error('Child ID not found');
-      }
+      const childId = await this.getChildId();
+      if (!childId) throw new Error('Child ID not found');
 
       const response = await this.makeRequest('POST', `/monitoring/${childId}/contacts/batch`, {
-        contacts: contacts,
-        sync_timestamp: new Date().toISOString()
+        contacts: contacts
       });
 
-      console.log(`Synced ${contacts.length} contacts`);
-      return response.success;
+      if(response.success) console.log(`Synced ${response.data.synced} contacts`);
+      return response;
     } catch (error) {
       console.error('Contacts sync error:', error);
-      return false;
+      return { success: false };
     }
   }
 
-  // Get device settings/controls from backend
-  async getDeviceControls() {
+  // Sync Social Media Activities
+  async syncSocialMedia(activities) {
     try {
-      const childId = await AsyncStorage.getItem('child_id');
-      if (!childId) {
-        throw new Error('Child ID not found');
-      }
+      const childId = await this.getChildId();
+      if (!childId) throw new Error('Child ID not found');
 
-      const response = await this.makeRequest('GET', `/control/${childId}/settings`);
-      
-      if (response.success) {
-        return {
-          blockedApps: response.data.blocked_apps || [],
-          blockedWebsites: response.data.blocked_websites || [],
-          timeRestrictions: response.data.bedtime_restrictions || null,
-          locationTracking: response.data.location_tracking_enabled || true,
-          appTimeLimits: response.data.app_time_limits || {}
-        };
-      }
-      
-      return null;
-    } catch (error) {
-      console.error('Get device controls error:', error);
-      return null;
-    }
-  }
-
-  // Send device status update
-  async sendStatusUpdate(status) {
-    try {
-      const childId = await AsyncStorage.getItem('child_id');
-      if (!childId) {
-        throw new Error('Child ID not found');
-      }
-
-      const response = await this.makeRequest('POST', `/monitoring/${childId}/status`, {
-        status: status,
-        timestamp: new Date().toISOString()
+      const response = await this.makeRequest('POST', `/monitoring/${childId}/social-media/batch`, {
+        activities: activities
       });
-
-      return response.success;
+      
+      if(response.success) console.log(`Synced ${response.data.synced} social media activities`);
+      return response.data;
     } catch (error) {
-      console.error('Status update error:', error);
-      return false;
+      console.error('Social media sync error:', error);
+      return { success: false, synced: 0 };
     }
   }
 
   // Send alert to parents
-  async sendAlert(alertType, alertData) {
+  async sendAlert(type, data) {
     try {
-      const childId = await AsyncStorage.getItem('child_id');
-      if (!childId) {
-        throw new Error('Child ID not found');
-      }
+      const childId = await this.getChildId();
+      if (!childId) throw new Error('Child ID not found');
 
       const response = await this.makeRequest('POST', `/monitoring/${childId}/alerts`, {
-        type: alertType,
-        data: alertData,
-        timestamp: new Date().toISOString(),
-        severity: alertData.severity || 'medium'
+        type,
+        ...data,
       });
 
-      console.log(`Alert sent: ${alertType}`);
-      return response.success;
+      if(response.success) console.log(`Alert sent: ${type}`);
+      return response;
     } catch (error) {
       console.error('Send alert error:', error);
-      return false;
+      return { success: false };
     }
   }
-
-  // Generic request method
-  async makeRequest(method, endpoint, data = null) {
-    try {
-      if (!this.deviceId) {
-        await this.initialize();
-      }
-
-      const url = `${this.baseURL}${endpoint}`;
-      const options = {
-        method: method,
-        headers: {
-          'Content-Type': 'application/json',
-          'User-Agent': `ParentGuard-Monitor/${await DeviceInfo.getVersion()}`,
-          'X-Device-ID': this.deviceId
-        },
-        timeout: 30000
-      };
-
-      // Add authentication if available
-      if (this.authToken) {
-        options.headers['Authorization'] = `Bearer ${this.authToken}`;
-      }
-
-      // Add body for POST/PUT requests
-      if (data && (method === 'POST' || method === 'PUT')) {
-        options.body = JSON.stringify(data);
-      }
-
-      console.log(`API Request: ${method} ${endpoint}`);
-      
-      const response = await fetch(url, options);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const responseData = await response.json();
-      
-      // Handle successful response
-      return {
-        success: true,
-        data: responseData,
-        status: response.status
-      };
-
-    } catch (error) {
-      console.error(`API Request failed: ${method} ${endpoint}`, error);
-      
-      // Return error response
-      return {
-        success: false,
-        error: error.message,
-        status: error.status || 0
-      };
-    }
-  }
-
-  // Offline data management
-  async storeOfflineData(type, data) {
-    try {
-      const key = `offline_${type}_${Date.now()}`;
-      await AsyncStorage.setItem(key, JSON.stringify(data));
-      console.log(`Stored offline data: ${key}`);
-    } catch (error) {
-      console.error('Store offline data error:', error);
-    }
-  }
-
-  async syncOfflineData() {
-    try {
-      const keys = await AsyncStorage.getAllKeys();
-      const offlineKeys = keys.filter(key => key.startsWith('offline_'));
-      
-      console.log(`Found ${offlineKeys.length} offline data entries`);
-      
-      for (const key of offlineKeys) {
-        try {
-          const data = await AsyncStorage.getItem(key);
-          const parsedData = JSON.parse(data);
-          
-          // Determine data type and sync accordingly
-          if (key.includes('calls')) {
-            await this.syncCallLogs(parsedData);
-          } else if (key.includes('location')) {
-            await this.syncLocation(parsedData);
-          } else if (key.includes('apps')) {
-            await this.syncAppUsage(parsedData);
-          } else if (key.includes('contacts')) {
-            await this.syncContacts(parsedData);
-          }
-          
-          // Remove synced data
-          await AsyncStorage.removeItem(key);
-          console.log(`Synced and removed offline data: ${key}`);
-          
-        } catch (syncError) {
-          console.error(`Failed to sync offline data ${key}:`, syncError);
-        }
-      }
-    } catch (error) {
-      console.error('Sync offline data error:', error);
-    }
-  }
-
-  // Get configuration updates
+  
+  // Get configuration updates from the server
   async getUpdates() {
     try {
+      if (!this.deviceId) await this.initialize();
       const lastUpdate = await AsyncStorage.getItem('last_update_check');
       const params = lastUpdate ? `?since=${lastUpdate}` : '';
       
-      const response = await this.makeRequest('GET', `/devices/${this.deviceId}/updates${params}`);
+      const response = await this.makeRequest('GET', `/monitoring/devices/${this.deviceId}/updates${params}`);
       
       if (response.success && response.data.updates) {
         await AsyncStorage.setItem('last_update_check', new Date().toISOString());
@@ -344,7 +212,45 @@ class ApiService {
       return [];
     }
   }
+
+  // Generic request method
+  async makeRequest(method, endpoint, data = null) {
+    try {
+      if (!this.deviceId) await this.initialize();
+
+      const url = `${this.baseURL}${endpoint}`;
+      const options = {
+        method: method,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Device-ID': this.deviceId
+        },
+        timeout: 15000
+      };
+
+      if (this.authToken) {
+        options.headers['Authorization'] = `Bearer ${this.authToken}`;
+      }
+
+      if (data) {
+        options.body = JSON.stringify(data);
+      }
+
+      const response = await fetch(url, options);
+      const responseData = await response.json();
+
+      if (!response.ok) {
+        const errorDetail = responseData.detail || `HTTP ${response.status}`;
+        throw new Error(errorDetail);
+      }
+
+      return { success: true, data: responseData, status: response.status };
+
+    } catch (error) {
+      console.error(`API Request Error: ${method} ${endpoint}`, error.message);
+      return { success: false, error: error.message };
+    }
+  }
 }
 
-export { ApiService };
 export default new ApiService();
