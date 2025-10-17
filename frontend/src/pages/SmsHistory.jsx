@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { api } from '../services/api';
+import { monitoringAPI } from '../services/api';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { ScrollArea } from '../components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
@@ -16,8 +16,8 @@ const SmsHistory = () => {
     const fetchSmsHistory = async () => {
       try {
         setLoading(true);
-        const response = await api.get(`/monitoring/${childId}/messages`);
-        setMessages(response.data);
+        const response = await monitoringAPI.getMessages(childId);
+        setMessages(response);
         setError(null);
       } catch (err) {
         setError('Failed to load SMS history.');

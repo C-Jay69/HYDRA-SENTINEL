@@ -35,7 +35,10 @@ const Dashboard = () => {
   const [selectedChild, setSelectedChild] = useState(null);
   const [loading, setLoading] = useState(true);
   const [locations, setLocations] = useState([]);
-  // ... other states
+  const [callLogs, setCallLogs] = useState([]);
+  const [messages, setMessages] = useState([]);
+  const [apps, setApps] = useState([]);
+  const [webHistory, setWebHistory] = useState([]);
 
   useEffect(() => {
     if (!authLoading) { // Only load data if auth is settled
@@ -45,7 +48,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (selectedChild) {
-      loadChildData(selectedChild._id || selectedChild.id);
+      loadChildData(selectedChild._id);
     }
   }, [selectedChild]);
 
@@ -65,7 +68,22 @@ const Dashboard = () => {
   };
 
   const loadChildData = async (childId) => {
-    // ... (implementation is the same)
+    try {
+      const [locationsData, callsData, messagesData, appsData, webData] = await Promise.all([
+        monitoringAPI.getLocationHistory(childId),
+        monitoringAPI.getCallLogs(childId),
+        monitoringAPI.getMessages(childId),
+        monitoringAPI.getAppUsage(childId),
+        monitoringAPI.getWebHistory(childId),
+      ]);
+      setLocations(locationsData);
+      setCallLogs(callsData);
+      setMessages(messagesData);
+      setApps(appsData);
+      setWebHistory(webData);
+    } catch (error) {
+      toast({ title: "Error", description: `Failed to load data for child ${childId}.`, variant: "destructive" });
+    }
   };
 
   if (authLoading || loading) {

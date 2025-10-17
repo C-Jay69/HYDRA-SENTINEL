@@ -84,6 +84,10 @@ export const usersAPI = {
 
 // Monitoring API
 export const monitoringAPI = {
+  getSocialMediaActivity: async (childId, page = 1, limit = 20) => {
+    const response = await api.get(`/api/monitoring/${childId}/social-media`, { params: { page, limit } });
+    return response.data;
+  },
   getCallLogs: async (childId, page = 1, limit = 20) => {
     const response = await api.get(`/api/monitoring/${childId}/calls`, { params: { page, limit } });
     return response.data;
