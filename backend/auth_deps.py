@@ -1,6 +1,7 @@
 from fastapi import HTTPException, Depends, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from services.auth_service import AuthService
+from database import db
 
 security = HTTPBearer()
 
@@ -11,6 +12,15 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
     if not payload:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired token"
+            detail="Invalid or expired token",
         )
+    
+    # Check if token is blacklisted
+    jti = payload.get("jti")
+    if not jti or db.is_blacklisted(jti):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token has been revoked",
+        )
+        
     return payload

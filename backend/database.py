@@ -3,7 +3,7 @@ from pymongo.errors import DuplicateKeyError
 import os
 import logging
 from typing import Optional, List, Dict, Any
-from datetime import datetime
+from datetime import datetime, timedelta
 
 logger = logging.getLogger(__name__)
 
@@ -66,6 +66,10 @@ class Database:
     @property
     def control_settings(self):
         return self.db.control_settings
+
+    @property
+    def token_blacklist(self):
+        return self.db.token_blacklist
     
     # Generic CRUD operations
     async def create_one(self, collection_name: str, document: dict) -> Optional[str]:
@@ -173,6 +177,24 @@ class Database:
         except Exception as e:
             logger.error(f"Error counting documents in {collection_name}: {e}")
             return 0
+
+    # Token blacklist methods
+    async def add_to_blacklist(self, jti: str):
+        """Add token JTI to blacklist with expiry"""
+        try:
+            # Tokens are set to expire, but this provides an extra layer of cleanup
+            expiry_date = datetime.utcnow() + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS + 1)
+            await self.token_blacklist.insert_one({"jti": jti, "expires_at": expiry_date})
+        except Exception as e:
+            logger.error(f"Error adding token to blacklist: {e}")
+
+    async def is_blacklisted(self, jti: str) -> bool:
+        """Check if a token JTI is in the blacklist"""
+        try:
+            return await self.token_blacklist.find_one({"jti": jti}) is not None
+        except Exception as e:
+            logger.error(f"Error checking blacklist: {e}")
+            return True # Fail safely
     
     # User-specific methods
     async def create_user(self, user_data: dict) -> Optional[str]:
@@ -263,6 +285,11 @@ class Database:
             await self.app_usage.create_index([("child_id", 1), ("date", -1)])
             await self.web_history.create_index([("child_id", 1), ("timestamp", -1)])
             await self.alerts.create_index([("child_id", 1), ("read", 1), ("timestamp", -1)])
+
+            # Token blacklist index with TTL
+            await self.token_blacklist.create_index(
+                "expires_at", expireAfterSeconds=0
+            )
             
             logger.info("Database indexes created successfully")
         except Exception as e:

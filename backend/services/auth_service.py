@@ -3,6 +3,7 @@ import bcrypt
 from datetime import datetime, timedelta
 from typing import Optional
 import os
+import uuid
 from fastapi import HTTPException, Request
 from google.oauth2 import id_token
 from google.auth.transport import requests
@@ -15,6 +16,7 @@ SECRET_KEY = os.environ.get('JWT_SECRET_KEY', 'your-secret-key-change-in-product
 ALGORITHM = 'HS256'
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 REFRESH_TOKEN_EXPIRE_DAYS = 7
+PASSWORD_RESET_TOKEN_EXPIRE_MINUTES = 15
 
 # Google OAuth Configuration
 GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', '')
@@ -42,7 +44,11 @@ class AuthService:
         else:
             expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
         
-        to_encode.update({"exp": expire, "type": "access"})
+        to_encode.update({
+            "exp": expire, 
+            "type": "access",
+            "jti": str(uuid.uuid4())
+        })
         encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
         return encoded_jwt
     
@@ -54,6 +60,22 @@ class AuthService:
         to_encode.update({"exp": expire, "type": "refresh"})
         encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
         return encoded_jwt
+
+    @staticmethod
+    def create_password_reset_token(email: str) -> str:
+        """Create password reset token"""
+        expire = datetime.utcnow() + timedelta(minutes=PASSWORD_RESET_TOKEN_EXPIRE_MINUTES)
+        to_encode = {"email": email, "exp": expire, "type": "password_reset"}
+        encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+        return encoded_jwt
+
+    @staticmethod
+    def verify_password_reset_token(token: str) -> Optional[dict]:
+        """Verify password reset token"""
+        payload = AuthService.verify_token(token)
+        if not payload or payload.get("type") != "password_reset":
+            return None
+        return payload
     
     @staticmethod
     def verify_token(token: str) -> Optional[dict]:
