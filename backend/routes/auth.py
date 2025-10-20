@@ -5,6 +5,8 @@ from datetime import datetime
 import logging
 
 from models.user import User, UserCreate, UserLogin, GoogleAuthRequest, SubscriptionPlan
+from models.email import EmailRequest
+from models.password import PasswordResetRequest
 from services.auth_service import AuthService
 from database import db
 from auth_deps import get_current_user
@@ -199,7 +201,7 @@ async def google_auth(auth_request: GoogleAuthRequest):
         
         # Create tokens
         token_data = {"user_id": user["_id"], "email": user["email"]}
-        access_token = AuthService.create_access_.create_access_token(token_data)
+        access_token = AuthService.create_access_token(token_data)
         refresh_token = AuthService.create_refresh_token(token_data)
         
         # Update last login
