@@ -5,6 +5,7 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 import logging
+import os
 from typing import Dict, List
 
 # Import your routers
@@ -13,13 +14,29 @@ from routes.users import router as users_router
 from routes.monitoring import router as monitoring_router
 from routes.admin import router as admin_router
 from routes.security import router as security_router
+from auth_deps import get_current_user_id
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # --- Rate Limiting ---
-limiter = Limiter(key_func=get_remote_address, default_limits=["100/minute"])
+limiter = Limiter(
+    key_func=get_remote_address, 
+    default_limits=[os.environ.get("DEFAULT_RATE_LIMIT", "100/minute")]
+)
+
+# Stricter limiter for sensitive endpoints
+slow_limiter = Limiter(
+    key_func=get_remote_address, 
+    default_limits=[os.environ.get("STRICT_RATE_LIMIT", "5/minute")]
+)
+
+# User-based limiter for authenticated users
+user_limiter = Limiter(
+    key_func=get_current_user_id, 
+    default_limits=[os.environ.get("USER_RATE_LIMIT", "100/minute")]
+)
 
 app = FastAPI(
     title="GuardianApp API",
@@ -28,6 +45,8 @@ app = FastAPI(
 )
 
 app.state.limiter = limiter
+app.state.slow_limiter = slow_limiter
+app.state.user_limiter = user_limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # --- CORS Middleware ---
@@ -83,7 +102,12 @@ async def websocket_endpoint(websocket: WebSocket, child_id: str, request: Reque
 @app.middleware("http")
 async def rate_limit_middleware(request: Request, call_next):
     try:
-        await limiter.check(request)
+        if request.scope["path"] not in ["/api/auth/login", "/api/auth/register"]:
+            user_id = await get_current_user_id(request)
+            if user_id:
+                await user_limiter.check(request)
+            else:
+                await limiter.check(request)
     except RateLimitExceeded as e:
         return _rate_limit_exceeded_handler(request, e)
     response = await call_next(request)

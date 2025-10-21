@@ -26,6 +26,14 @@ class Database:
     @property
     def users(self):
         return self.db.users
+
+    @property
+    def revenue(self):
+        return self.db.revenue
+
+    @property
+    def new_users(self):
+        return self.db.new_users
     
     @property
     def children(self):
@@ -62,7 +70,11 @@ class Database:
     @property
     def contacts(self):
         return self.db.contacts
-    
+
+    @property
+    def transactions(self):
+        return self.db.transactions
+
     @property
     def control_settings(self):
         return self.db.control_settings
@@ -200,12 +212,14 @@ class Database:
     async def create_user(self, user_data: dict) -> Optional[str]:
         """Create a new user with unique email constraint"""
         try:
-            # Check if user already exists
-            existing_user = await self.find_one("users", {"email": user_data["email"]})
-            if existing_user:
-                return None
-            
+            # Ensure subscription is a string
+            if 'subscription' in user_data and hasattr(user_data['subscription'], 'value'):
+                user_data['subscription'] = user_data['subscription'].value
+
             return await self.create_one("users", user_data)
+        except DuplicateKeyError:
+            logger.warning(f"Attempted to create a user with a duplicate email: {user_data['email']}")
+            return None
         except Exception as e:
             logger.error(f"Error creating user: {e}")
             return None
@@ -255,18 +269,74 @@ class Database:
             total_children = await self.count_documents("children")
             total_alerts = await self.count_documents("alerts")
             unread_alerts = await self.count_documents("alerts", {"read": False})
-            
+
+            # Get revenue this month
+            revenue_this_month = await self.transactions.aggregate([
+                {"$match": {"created_at": {"$gte": datetime.utcnow() - timedelta(days=30)}}},
+                {"$group": {"_id": None, "total": {"$sum": "$amount"}}},
+            ]).to_list(length=1)
+            revenue_this_month = revenue_this_month[0]["total"] if revenue_this_month else 0
+
+            # Get new users this month
+            new_users_this_month = await self.count_documents(
+                "users", {"created_at": {"$gte": datetime.utcnow() - timedelta(days=30)}}
+            )
+
             return {
                 "total_users": total_users,
                 "active_users": active_users,
                 "total_children": total_children,
                 "total_alerts": total_alerts,
-                "unread_alerts": unread_alerts
+                "unread_alerts": unread_alerts,
+                "revenue_this_month": revenue_this_month,
+                "new_users_this_month": new_users_this_month,
             }
         except Exception as e:
             logger.error(f"Error getting platform stats: {e}")
             return {}
-    
+
+    async def get_time_series_data(self, collection_name: str, time_range: str, 
+                                   is_revenue: bool = False) -> List[Dict[str, Any]]:
+        """Get time-series data for analytics"""
+        today = datetime.utcnow()
+        
+        days = 0
+        if time_range == '7d':
+            days = 7
+        elif time_range == '30d':
+            days = 30
+        elif time_range == '90d':
+            days = 90
+        elif time_range == 'all':
+            days = 365
+
+        query_filter = {
+            'created_at': {
+                '$gte': today - timedelta(days=days)
+            }
+        }
+
+        group_by_format = "%Y-%m-%d"
+        if days > 90:
+            group_by_format = "%Y-%m"
+
+        pipeline = [
+            {'$match': query_filter},
+            {'$group': {
+                '_id': {'$dateToString': {'format': group_by_format, 'date': '$created_at'}},
+                'count' if not is_revenue else 'total': {'$sum': 1 if not is_revenue else '$amount'}
+            }},
+            {'$sort': {'_id': 1}}
+        ]
+
+        try:
+            collection = getattr(self.db, collection_name)
+            results = await collection.aggregate(pipeline).to_list(length=None)
+            return results
+        except Exception as e:
+            logger.error(f"Error getting time series data from {collection_name}: {e}")
+            return []
+
     async def initialize_indexes(self):
         """Create database indexes for better performance"""
         try:

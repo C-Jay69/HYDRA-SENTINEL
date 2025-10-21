@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends, status
+from fastapi import APIRouter, HTTPException, Depends, status, Request
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
@@ -13,13 +13,13 @@ from auth_deps import get_current_user
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/auth", tags=["Authentication"])
+router = APIRouter(prefix='/api/auth', tags=['Authentication'])
 
 
 class TokenResponse(BaseModel):
     access_token: str
     refresh_token: str
-    token_type: str = "bearer"
+    token_type: str = 'bearer'
     user: dict
 
 
@@ -28,15 +28,16 @@ class RefreshTokenRequest(BaseModel):
 
 
 @router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
-async def register(user_data: UserCreate):
+async def register(user_data: UserCreate, request: Request):
     """Register a new user"""
+    await request.app.state.slow_limiter.check(request)
     try:
         # Check if user already exists
         existing_user = await db.find_user_by_email(user_data.email)
         if existing_user:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Email already registered"
+                detail='Email already registered'
             )
         
         # Hash password
@@ -44,11 +45,11 @@ async def register(user_data: UserCreate):
         
         # Create user document
         user_dict = {
-            "email": user_data.email,
-            "password": hashed_password,
-            "name": user_data.name,
-            "subscription": user_data.subscription.value,
-            "is_active": True
+            'email': user_data.email,
+            'password': hashed_password,
+            'name': user_data.name,
+            'subscription': user_data.subscription.value,
+            'is_active': True
         }
         
         # Insert user into database
@@ -56,24 +57,24 @@ async def register(user_data: UserCreate):
         if not user_id:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to create user"
+                detail='Failed to create user'
             )
         
         # Create tokens
-        token_data = {"user_id": user_id, "email": user_data.email}
+        token_data = {'user_id': user_id, 'email': user_data.email}
         access_token = AuthService.create_access_token(token_data)
         refresh_token = AuthService.create_refresh_token(token_data)
         
         # Update last login
-        await db.update_one("users", {"_id": user_id}, {"last_login": datetime.utcnow()})
+        await db.update_one('users', {'_id': user_id}, {'last_login': datetime.utcnow()})
         
         # Prepare user response (without password)
         user_response = {
-            "id": user_id,
-            "email": user_data.email,
-            "name": user_data.name,
-            "subscription": user_data.subscription.value,
-            "is_active": True
+            'id': user_id,
+            'email': user_data.email,
+            'name': user_data.name,
+            'subscription': user_data.subscription.value,
+            'is_active': True
         }
         
         return TokenResponse(
@@ -85,55 +86,56 @@ async def register(user_data: UserCreate):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Registration error: {e}")
+        logger.error(f'Registration error: {e}')
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Registration failed"
+            detail='Registration failed'
         )
 
 
 @router.post("/login", response_model=TokenResponse)
-async def login(credentials: UserLogin):
+async def login(credentials: UserLogin, request: Request):
     """Login user with email and password"""
+    await request.app.state.slow_limiter.check(request)
     try:
         # Find user by email
         user = await db.find_user_by_email(credentials.email)
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid email or password"
+                detail='Invalid email or password'
             )
         
         # Verify password
-        if not AuthService.verify_password(credentials.password, user["password"]):
+        if not AuthService.verify_password(credentials.password, user['password']):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid email or password"
+                detail='Invalid email or password'
             )
         
         # Check if user is active
-        if not user.get("is_active", True):
+        if not user.get('is_active', True):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Account is deactivated"
+                detail='Account is deactivated'
             )
         
         # Create tokens
-        token_data = {"user_id": user["_id"], "email": user["email"]}
+        token_data = {'user_id': user['_id'], 'email': user['email']}
         access_token = AuthService.create_access_token(token_data)
         refresh_token = AuthService.create_refresh_token(token_data)
         
         # Update last login
-        await db.update_one("users", {"_id": user["_id"]}, {"last_login": datetime.utcnow()})
+        await db.update_one('users', {'_id': user['_id']}, {'last_login': datetime.utcnow()})
         
         # Prepare user response (without password)
         user_response = {
-            "id": user["_id"],
-            "email": user["email"],
-            "name": user["name"],
-            "subscription": user.get("subscription", "Basic"),
-            "avatar": user.get("avatar"),
-            "is_active": user.get("is_active", True)
+            'id': user['_id'],
+            'email': user['email'],
+            'name': user['name'],
+            'subscription': user.get('subscription', 'Basic'),
+            'avatar': user.get('avatar'),
+            'is_active': user.get('is_active', True)
         }
         
         return TokenResponse(
@@ -145,10 +147,10 @@ async def login(credentials: UserLogin):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Login error: {e}")
+        logger.error(f'Login error: {e}')
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Login failed"
+            detail='Login failed'
         )
 
 
@@ -161,46 +163,46 @@ async def google_auth(auth_request: GoogleAuthRequest):
         if not google_user:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid Google token"
+                detail='Invalid Google token'
             )
         
         # Check if user exists by Google ID
-        user = await db.find_user_by_google_id(google_user["google_id"])
+        user = await db.find_user_by_google_id(google_user['google_id'])
         
         if not user:
             # Check if user exists by email
-            user = await db.find_user_by_email(google_user["email"])
+            user = await db.find_user_by_email(google_user['email'])
             
             if user:
                 # Link Google account to existing user
                 await db.update_one(
-                    "users",
-                    {"_id": user["_id"]},
-                    {"google_id": google_user["google_id"], "avatar": google_user["avatar"]}
+                    'users',
+                    {'_id': user['_id']},
+                    {'google_id': google_user['google_id'], 'avatar': google_user['avatar']}
                 )
             else:
                 # Create new user
                 user_dict = {
-                    "email": google_user["email"],
-                    "name": google_user["name"],
-                    "google_id": google_user["google_id"],
-                    "avatar": google_user["avatar"],
-                    "subscription": SubscriptionPlan.BASIC.value,
-                    "is_active": True
+                    'email': google_user['email'],
+                    'name': google_user['name'],
+                    'google_id': google_user['google_id'],
+                    'avatar': google_user['avatar'],
+                    'subscription': SubscriptionPlan.BASIC.value,
+                    'is_active': True
                 }
                 
                 user_id = await db.create_user(user_dict)
                 if not user_id:
                     raise HTTPException(
                         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                        detail="Failed to create user"
+                        detail='Failed to create user'
                     )
                 
                 # Fetch the created user
                 user = await db.find_one("users", {"_id": user_id})
         
         # Create tokens
-        token_data = {"user_id": user["_id"], "email": user["email"]}
+        token_data = {'user_id': user['_id'], 'email': user['email']}
         access_token = AuthService.create_access_token(token_data)
         refresh_token = AuthService.create_refresh_token(token_data)
         
@@ -209,12 +211,12 @@ async def google_auth(auth_request: GoogleAuthRequest):
         
         # Prepare user response
         user_response = {
-            "id": user["_id"],
-            "email": user["email"],
-            "name": user["name"],
-            "subscription": user.get("subscription", "Basic"),
-            "avatar": user.get("avatar"),
-            "is_active": user.get("is_active", True)
+            'id': user['_id'],
+            'email': user['email'],
+            'name': user['name'],
+            'subscription': user.get('subscription', 'Basic'),
+            'avatar': user.get('avatar'),
+            'is_active': user.get('is_active', True)
         }
         
         return TokenResponse(
@@ -226,10 +228,10 @@ async def google_auth(auth_request: GoogleAuthRequest):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Google auth error: {e}")
+        logger.error(f'Google auth error: {e}')
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Google authentication failed"
+            detail='Google authentication failed'
         )
 
 
@@ -254,18 +256,18 @@ async def refresh_token(token_request: RefreshTokenRequest):
             )
         
         # Create new tokens
-        token_data = {"user_id": user["_id"], "email": user["email"]}
+        token_data = {'user_id': user['_id'], 'email': user['email']}
         new_access_token = AuthService.create_access_token(token_data)
         new_refresh_token = AuthService.create_refresh_token(token_data)
         
         # Prepare user response
         user_response = {
-            "id": user["_id"],
-            "email": user["email"],
-            "name": user["name"],
-            "subscription": user.get("subscription", "Basic"),
-            "avatar": user.get("avatar"),
-            "is_active": user.get("is_active", True)
+            'id': user['_id'],
+            'email': user['email'],
+            'name': user['name'],
+            'subscription': user.get('subscription', 'Basic'),
+            'avatar': user.get('avatar'),
+            'is_active': user.get('is_active', True)
         }
         
         return TokenResponse(
@@ -277,10 +279,10 @@ async def refresh_token(token_request: RefreshTokenRequest):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Token refresh error: {e}")
+        logger.error(f'Token refresh error: {e}')
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Token refresh failed"
+            detail='Token refresh failed'
         )
 
 
@@ -308,13 +310,13 @@ async def get_user_profile(token_payload: dict = Depends(get_current_user)):
         
         # Prepare user response (without password)
         user_response = {
-            "id": user["_id"],
-            "email": user["email"],
-            "name": user["name"],
-            "subscription": user.get("subscription", "Basic"),
-            "avatar": user.get("avatar"),
-            "join_date": user.get("join_date"),
-            "is_active": user.get("is_active", True)
+            'id': user['_id'],
+            'email': user['email'],
+            'name': user['name'],
+            'subscription': user.get('subscription', 'Basic'),
+            'avatar': user.get('avatar'),
+            'join_date': user.get('join_date'),
+            'is_active': user.get('is_active', True)
         }
         
         return user_response
@@ -322,10 +324,10 @@ async def get_user_profile(token_payload: dict = Depends(get_current_user)):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Get user error: {e}")
+        logger.error(f'Get user error: {e}')
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to get user profile"
+            detail='Failed to get user profile'
         )
 
 

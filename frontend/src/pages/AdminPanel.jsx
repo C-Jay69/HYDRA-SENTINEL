@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -48,31 +48,45 @@ const AdminPanel = () => {
   const [users, setUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [filterPlan, setFilterPlan] = useState('all');
   const [securityLogs, setSecurityLogs] = useState([]);
+
+  const loadUsers = useCallback(async () => {
+    try {
+      if (searchTerm) {
+        const data = await adminAPI.searchUsers(searchTerm);
+        setUsers(data);
+      } else {
+        const data = await adminAPI.filterUsers(filterStatus, filterPlan);
+        setUsers(data);
+      }
+    } catch (error) {
+      toast({ title: 'Error loading users', description: error.message, variant: 'destructive' });
+    }
+  }, [searchTerm, filterStatus, filterPlan, toast]);
 
   useEffect(() => {
     if (!authLoading) {
       if (!user || user.role !== 'admin') {
-        toast({ title: "Access Denied", description: "Admin privileges required", variant: "destructive" });
+        toast({ title: 'Access Denied', description: 'Admin privileges required', variant: 'destructive' });
         navigate('/dashboard');
         return;
       }
-      loadAdminData();
-      if (activeTab === 'security') {
+      if (activeTab === 'users') {
+        loadUsers();
+      } else if (activeTab === 'dashboard') {
+        loadAdminData();
+      } else if (activeTab === 'security') {
         loadSecurityLogs();
       }
     }
-  }, [user, authLoading, navigate, toast, activeTab]);
+  }, [user, authLoading, navigate, toast, activeTab, loadUsers]);
 
   const loadAdminData = async () => {
     try {
       setLoading(true);
-      const [stats, usersData] = await Promise.all([
-        adminAPI.getDashboardStats(),
-        adminAPI.getAllUsers(),
-      ]);
+      const stats = await adminAPI.getDashboardStats();
       setDashboardStats(stats);
-      setUsers(usersData);
     } catch (error) {
       toast({
         title: "Error Loading Data",
@@ -97,16 +111,30 @@ const AdminPanel = () => {
     }
   };
   
-  const handleUserAction = (action, userId) => {
-    toast({ title: `Action: ${action}`, description: `User ID: ${userId}` });
+  const handleUserAction = async (action, userId, isActive) => {
+    try {
+      if (action === 'suspend') {
+        await adminAPI.suspendUser(userId);
+        toast({ title: 'User suspended' });
+      } else if (action === 'unsuspend') {
+        await adminAPI.unsuspendUser(userId);
+        toast({ title: 'User unsuspended' });
+      }
+      loadUsers();
+    } catch (error) {
+      toast({ title: `Error ${action}ing user`, description: error.message, variant: 'destructive' });
+    }
   };
 
-  const filteredUsers = users.filter(u => {
-    const searchTermLower = searchTerm.toLowerCase();
-    const matchesSearch = u.email.toLowerCase().includes(searchTermLower) || u.username.toLowerCase().includes(searchTermLower);
-    const matchesStatus = filterStatus === 'all' || u.status === filterStatus;
-    return matchesSearch && matchesStatus;
-  });
+  const handleDeleteUser = async (userId) => {
+    try {
+      await adminAPI.deleteUser(userId);
+      toast({ title: 'User deleted' });
+      loadUsers();
+    } catch (error) {
+      toast({ title: 'Error deleting user', description: error.message, variant: 'destructive' });
+    }
+  };
 
   if (authLoading || loading || !dashboardStats) {
     return (
@@ -190,26 +218,41 @@ const AdminPanel = () => {
                         <SelectItem value="suspended">Suspended</SelectItem>
                       </SelectContent>
                     </Select>
+                     <Select value={filterPlan} onValueChange={setFilterPlan}>
+                      <SelectTrigger className="w-[180px] bg-gray-700/50 border-gray-600 text-white">
+                        <SelectValue placeholder="Filter plan" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-gray-800 text-white">
+                        <SelectItem value="all">All Plans</SelectItem>
+                        <SelectItem value="Basic">Basic</SelectItem>
+                        <SelectItem value="Premium">Premium</SelectItem>
+                        <SelectItem value="Family">Family</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                {filteredUsers.map(u => (
+                {users.map(u => (
                   <Card key={u._id} className="bg-gray-700/50 border-gray-600 p-4">
                     <div className="flex justify-between items-center">
                       <div className="flex items-center gap-4">
-                        <Avatar><AvatarFallback>{u.username.charAt(0).toUpperCase()}</AvatarFallback></Avatar>
+                        <Avatar><AvatarFallback>{u.name.charAt(0).toUpperCase()}</AvatarFallback></Avatar>
                         <div>
-                          <p className="font-semibold text-white">{u.username}</p>
+                          <p className="font-semibold text-white">{u.name}</p>
                           <p className="text-sm text-gray-400">{u.email}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-4">
-                        <Badge variant={u.status === 'active' ? 'default' : 'destructive'}>{u.status}</Badge>
-                        <Badge variant="secondary">{u.subscription_plan}</Badge>
+                        <Badge variant={u.is_active ? 'default' : 'destructive'}>{u.is_active ? 'Active' : 'Suspended'}</Badge>
+                        <Badge variant="secondary">{u.subscription}</Badge>
                         <p className="text-sm text-gray-400">Children: {u.children.length}</p>
-                        <Button variant="destructive" size="sm" onClick={() => handleUserAction('suspend', u._id)}>Suspend</Button>
-                        <Button variant="outline" size="sm" onClick={() => handleUserAction('delete', u._id)}>Delete</Button>
+                        {u.is_active ? (
+                          <Button variant="destructive" size="sm" onClick={() => handleUserAction('suspend', u._id, u.is_active)}>Suspend</Button>
+                        ) : (
+                          <Button variant="secondary" size="sm" onClick={() => handleUserAction('unsuspend', u._id, u.is_active)}>Unsuspend</Button>
+                        )}
+                        <Button variant="outline" size="sm" onClick={() => handleDeleteUser(u._id)}>Delete</Button>
                       </div>
                     </div>
                   </Card>
